@@ -37,7 +37,7 @@ jobs:
   distros:
     name: "Container ${{ matrix.distro }}"
     runs-on: "ubuntu-latest"
-    needs: syntaxcheck
+    # needs: syntaxcheck
     strategy:
       fail-fast: true
       matrix:
@@ -52,28 +52,57 @@ jobs:
           # "opensuse--tumbleweed",
           "ubuntu-bionic", "ubuntu-focal", "ubuntu-groovy", "ubuntu-hirsute", "ubuntu-impish",
         ]
+    env:
+      TAG: "quay.io/tiran/cpythonbuild:${{ matrix.distro }}"
+      EXPORT_TAR: "/tmp/tiran-cpythonbuild-${{ matrix.distro }}.tar"
     steps:
       - name: "checkout"
         uses: "actions/checkout@v2"
-      - name: "build container with CPython build dependencies for ${{ matrix.distro }}"
-        run: |
-           set -xe
-           docker build . -f tests/Dockerfile.${{ matrix.distro }} -t builddep:${{ matrix.distro }}
+      - name: Set up Docker Buildx
+        uses: docker/setup-buildx-action@v1
+      - name: "build container image"
+        uses: docker/build-push-action@v2
+        with:
+          context: .
+          file: tests/Dockerfile.${{ matrix.distro }}
+          platforms: linux/amd64
+          push: false
+          load: true
+          tags: ${{ env.TAG }}
       - name: "checkout CPython"
         uses: "actions/checkout@v2"
         with:
           repository: python/cpython
           path: cpython
           ref: main
-      - name: "build CPython for ${{ matrix.distro }}"
-        run: |
-          set -xe
-          docker run -v ${GITHUB_WORKSPACE}/cpython:/cpython builddep:${{ matrix.distro }} | tee result-${{ matrix.distro }}.txt
-      - uses: actions/upload-artifact@v2
+      - name: "build CPython with ${{ env.TAG }}"
+        run: docker run --rm -v ${GITHUB_WORKSPACE}/cpython:/cpython ${{ env.TAG }}
+      - name: "save container to tar ball"
+        if: ${{ 0 }}
+        run: docker save -o ${{ env.EXPORT_TAR }} ${{ env.TAG }}
+      - name: "upload container artifact"
+        if: ${{ 0 }}
+        uses: actions/upload-artifact@v2
         with:
-          name: result
-          path: result-${{ matrix.distro }}.txt
+          name: image
+          path: ${{ env.EXPORT_TAR }}
           if-no-files-found: error
+      - name: Login to quay.io Container Registry
+        if: ${{ github.event_name == 'release' && github.event.action == 'created' }}
+        uses: docker/login-action@v1 
+        with:
+          registry: quay.io
+          username: ${{ secrets.QUAY_LOGIN }}
+          password: ${{ secrets.QUAY_TOKEN }}
+      - name: "Upload container image ${{ env.TAG }}"
+        if: ${{ github.event_name == 'release' && github.event.action == 'created' }}
+        uses: docker/build-push-action@v2
+        with:
+          context: .
+          file: tests/Dockerfile.${{ matrix.distro }}
+          platforms: linux/amd64
+          push: true
+          tags: ${{ env.TAG }}
 
   # freebsd:
   #   runs-on: macos-10.15

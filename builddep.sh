@@ -191,7 +191,7 @@ case "$PKG_MGR" in
                 ;;
         esac
         # build-dep is provided by core plugins
-        PREPARE_CMD="dnf install -y dnf-plugins-core"
+        PREPARE_CMD="dnf install -y dnf-plugins-core make"
         UPDATE_CMD="dnf update -y ${dnf_args}"
         INSTALL_CMD="dnf build-dep -y ${dnf_args} python3"
         INSTALL_EXTRAS_CMD="dnf install -y ${dnf_args} ${dnf_extras}"
