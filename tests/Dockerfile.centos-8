@@ -1,0 +1,9 @@
+FROM centos:8
+
+VOLUME ["/cpython"]
+
+COPY tests/entry.sh /
+ENTRYPOINT ["/entry.sh"]
+
+COPY builddep.sh /
+RUN ["/builddep.sh", "--extras", "--cleanup"]

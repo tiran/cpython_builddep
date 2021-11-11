@@ -93,14 +93,23 @@ elif check_command dnf; then
     # CentOS and RHEL need extra development packages from powertools
     # or Code Ready Builder repos.
     case "$ID" in
-        centos) DNF_EXTRA="--enablerepo=powertools";;
-        rhel) DNF_EXTRA="--enablerepo=rhel-CRB";;
-        *) DNF_EXTRA="";;
+        centos)
+            dnf_args="--enablerepo=powertools"
+            dnf_extras="gdb"
+            ;;
+        rhel)
+            dnf_args="--enablerepo=rhel-CRB"
+            dnf_extras="gdb"
+            ;;
+        *)
+            dnf_args=""
+            dnf_extras="gdb ccache lcov"
+            ;;
     esac
     # build-dep is provided by core plugins
     PREPARE_CMD="dnf install -y dnf-plugins-core"
-    INSTALL_CMD="dnf build-dep -y $DNF_EXTRA python3"
-    INSTALL_EXTRAS_CMD="dnf install -y lcov gdb ccache"
+    INSTALL_CMD="dnf build-dep -y ${dnf_args} python3"
+    INSTALL_EXTRAS_CMD="dnf install -y ${dnf_args} ${dnf_extras}"
     CLEANUP_CMD="dnf clean all"
 elif check_command yum; then
     # RHEL 7 and CentOS 7
