@@ -114,7 +114,7 @@ elif check_command dnf; then
 elif check_command yum; then
     # RHEL 7 and CentOS 7
     # to use openssl11 from EPEL:
-    # yum install -y epel && yum install -e openssl11-devel
+    # yum install -y epel && yum install -y openssl11-devel
     # sed -i 's/PKG_CONFIG openssl /PKG_CONFIG openssl11 /g' configure
     PREPARE_CMD="yum install -y yum-utils make"
     INSTALL_CMD="yum-builddep -y python3"
