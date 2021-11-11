@@ -12,7 +12,7 @@ COPY tests/entry.sh /
 ENTRYPOINT ["/entry.sh"]
 
 COPY builddep.sh /
-RUN ["/builddep.sh", "--extras", "--cleanup"]
+RUN ["/builddep.sh", "--update", "--extras", "--cleanup"]
 """
 
 here = os.path.abspath(os.path.dirname(__file__))

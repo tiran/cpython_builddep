@@ -5,9 +5,22 @@ Install CPython build and development dependencies on various distributions.
 ## Usage
 
 ```
+$ ./builddep.sh --help
+builddeps.sh - Install CPython build dependencies
+
+    -h --help     display this help and exit
+    --extras      install extra development packages (gdb, ccache...)
+    --update      update all packages
+    --cleanup     cleanup package cache
+
+```
+
+Install build dependencies:
+```
 sudo ./builddep.sh
 ```
 
+Also install extra dependencies and purge the package cache afterwards
 ```
 sudo ./builddep.sh --extras --cleanup
 ```

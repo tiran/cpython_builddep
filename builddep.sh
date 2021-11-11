@@ -17,12 +17,15 @@ SYSNAME=$(uname -s)
 # function
 usage() {
     echo "builddeps.sh - Install CPython build dependencies"
+    echo ""
     echo "    -h --help     display this help and exit"
-    echo "    --extras      install extra development packages"
+    echo "    --update      update all packages"
+    echo "    --extras      install extra development packages (gdb, ccache...)"
     echo "    --cleanup     cleanup package cache"
     echo ""
 }
 
+OPT_UPDATE=no
 OPT_EXTRAS=no
 OPT_CLEANUP=no
 
@@ -31,6 +34,9 @@ while test -n "$1"; do
         -h|--help)
             usage
             exit
+            ;;
+        --update)
+            OPT_UPDATE=yes
             ;;
         --extras)
             OPT_EXTRAS=yes
@@ -55,6 +61,8 @@ check_command() {
 
 # prepare environment, e.g. update package cache
 PREPARE_CMD=
+# update distro packages
+UPDATE_CMD=
 # install development packages
 INSTALL_CMD=
 # install additional development packages, used by CI
@@ -64,6 +72,8 @@ CLEANUP_CMD=
 
 if check_command apk; then
     # Alpine
+    PREPARE_CMD="apk update"
+    UPDATE_CMD="apk upgrade"
     INSTALL_CMD="apk add \
         build-base git \
         bzip2-dev gdbm-dev expat-dev libffi-dev libnsl-dev libtirpc-dev \
@@ -72,6 +82,7 @@ if check_command apk; then
 elif check_command pacman; then
     # Arch Linux
     PREPARE_CMD="pacman -Sy"
+    UPDATE_CMD="pacman --noconfirm -Su"
     INSTALL_CMD="pacman --noconfirm -S \
         gcc make pkg-config bzip2 gdbm expat libffi ncurses openssl readline sqlite3 tk"
     CLEANUP_CMD="pacman -Scc --noconfirm"
@@ -80,14 +91,15 @@ elif check_command apt; then
     # apt build-deb requires deb-src entries in sources.list. They are not
     # present on user systems and there seems to be no apt command to enable
     # them.
-    apt_install="env DEBIAN_FRONTEND=noninteractive apt install --no-install-recommends -qy"
-    PREPARE_CMD="apt update"
-    INSTALL_CMD="${apt_install} \
+    apt="env DEBIAN_FRONTEND=noninteractive apt --no-install-recommends -qy"
+    PREPARE_CMD="${apt} update"
+    UPDATE_CMD="${apt} upgrade"
+    INSTALL_CMD="${apt} install \
         build-essential git pkg-config \
         libbz2-dev libffi-dev libgdbm-dev libgdbm-compat-dev liblzma-dev \
         libncurses5-dev libreadline6-dev libsqlite3-dev libssl-dev \
         lzma lzma-dev tk-dev uuid-dev zlib1g-dev"
-    INSTALL_EXTRAS_CMD="${apt_install} gdb lcov ccache"
+    INSTALL_EXTRAS_CMD="${apt} install gdb lcov ccache"
     CLEANUP_CMD="apt clean"
 elif check_command dnf; then
     # CentOS and RHEL need extra development packages from powertools
@@ -108,6 +120,7 @@ elif check_command dnf; then
     esac
     # build-dep is provided by core plugins
     PREPARE_CMD="dnf install -y dnf-plugins-core"
+    UPDATE_CMD="dnf update -y ${dnf_args}"
     INSTALL_CMD="dnf build-dep -y ${dnf_args} python3"
     INSTALL_EXTRAS_CMD="dnf install -y ${dnf_args} ${dnf_extras}"
     CLEANUP_CMD="dnf clean all"
@@ -117,6 +130,7 @@ elif check_command yum; then
     # yum install -y epel && yum install -y openssl11-devel
     # sed -i 's/PKG_CONFIG openssl /PKG_CONFIG openssl11 /g' configure
     PREPARE_CMD="yum install -y yum-utils make"
+    UPDATE_CMD="yum update -y"
     INSTALL_CMD="yum-builddep -y python3"
     INSTALL_EXTRAS_CMD="yum install -y lcov gdb ccache"
     CLEANUP_CMD="yum clean all"
@@ -133,6 +147,10 @@ else
 fi
 
 $PREPARE_CMD
+
+if test "$OPT_UPDATE" = "yes" -a -n "$UPDATE_CMD"; then
+    $UPDATE_CMD
+fi
 
 $INSTALL_CMD
 
