@@ -25,6 +25,7 @@ usage() {
     echo ""
 }
 
+OPT_DEBUG=no
 OPT_UPDATE=no
 OPT_EXTRAS=no
 OPT_CLEANUP=no
@@ -34,6 +35,9 @@ while test -n "$1"; do
         -h|--help)
             usage
             exit
+            ;;
+        -d|--debug)
+            OPT_DEBUG=yes
             ;;
         --update)
             OPT_UPDATE=yes
@@ -52,6 +56,14 @@ while test -n "$1"; do
     esac
     shift
 done
+
+if test "$OPT_DEBUG" = yes; then
+    echo "sysname: ${SYSNAME}"
+    if test -f /etc/os-release; then
+        echo "os-release: ID=${ID}, ID_LIKE=${ID_LIKE}, VERSION_ID=${VERSION_ID}"
+    fi
+    echo ""
+fi
 
 # function
 check_command() {
