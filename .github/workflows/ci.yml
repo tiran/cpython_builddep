@@ -27,6 +27,7 @@ jobs:
           "debian-bullseye", "debian-buster", "debian-testing",
           "fedora-32", "fedora-33", "fedora-34", "fedora-35",
           # "gentoo--stage3",
+          # OpenSUSE container works locally but hangs on GHA.
           # "opensuse--tumbleweed",
           "ubuntu-bionic", "ubuntu-focal", "ubuntu-groovy", "ubuntu-hirsute", "ubuntu-impish",
         ]

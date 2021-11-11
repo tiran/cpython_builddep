@@ -33,7 +33,6 @@ sudo ./builddep.sh --extras --cleanup
 * Debian (10, 11, testing)
 * Fedora (32+)
 * RHEL (7, 8)
-* SUSE (untested)
 * Ubuntu (18.04, 20.4+)
 
 ### Note
