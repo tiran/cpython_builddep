@@ -14,95 +14,97 @@ on:
         required: false
 
 jobs:
-  # distros:
-  #   name: "Container ${{ matrix.distro }}"
-  #   runs-on: "ubuntu-latest"
-  #   strategy:
-  #     fail-fast: true
-  #     matrix:
-  #       distro: [
-  #         "alpine-3.12", "alpine-3.13",
-  #         "archlinux",
-  #         "centos-7", "centos-8",
-  #         "debian-bullseye", "debian-buster", "debian-testing",
-  #         "fedora-32", "fedora-33", "fedora-34", "fedora-35",
-  #         # "gentoo--stage3",
-  #         # OpenSUSE container works locally but hangs on GHA.
-  #         # "opensuse--tumbleweed",
-  #         "ubuntu-bionic", "ubuntu-focal", "ubuntu-groovy", "ubuntu-hirsute", "ubuntu-impish",
-  #       ]
-  #   steps:
-  #     - name: "checkout"
-  #       uses: "actions/checkout@v2"
-  #     - name: "build container with CPython build dependencies for ${{ matrix.distro }}"
-  #       run: |
-  #          set -xe
-  #          docker build . -f tests/Dockerfile.${{ matrix.distro }} -t builddep:${{ matrix.distro }}
-  #     - name: "checkout CPython"
-  #       uses: "actions/checkout@v2"
-  #       with:
-  #         repository: python/cpython
-  #         path: cpython
-  #         ref: main
-  #     - name: "build CPython for ${{ matrix.distro }}"
-  #       run: |
-  #         set -xe
-  #         docker run -v ${GITHUB_WORKSPACE}/cpython:/cpython builddep:${{ matrix.distro }} | tee result-${{ matrix.distro }}.txt
-  #     - uses: actions/upload-artifact@v2
-  #       with:
-  #         name: result
-  #         path: result-${{ matrix.distro }}.txt
-  #         if-no-files-found: error
-
-  # syntax:
-  #   name: "Check syntax"
-  #   runs-on: "ubuntu-latest"
-  #   strategy:
-  #     fail-fast: false
-  #   steps:
-  #     - name: "checkout"
-  #       uses: "actions/checkout@v2"
-  #     - name: "install dash and shellcheck"
-  #       run: |
-  #          set -e
-  #          sudo apt update
-  #          sudo apt install -y bash dash shellcheck
-  #     - name: "check with dash"
-  #       run: dash -n builddep.sh
-  #     - name: "check with bash"
-  #       run: bash -n builddep.sh
-  #     - name: "check with shellcheck"
-  #       run: shellcheck -x builddep.sh
-
-  freebsd:
-    runs-on: macos-10.15
-    name: FreeBSD
+  syntaxcheck:
+    name: "Check syntax"
+    runs-on: "ubuntu-latest"
     strategy:
       fail-fast: false
     steps:
-      - name: checkout
+      - name: "checkout"
         uses: "actions/checkout@v2"
+      - name: "install dash and shellcheck"
+        run: |
+           set -e
+           sudo apt update
+           sudo apt install -y bash dash shellcheck
+      - name: "check with dash"
+        run: dash -n builddep.sh
+      - name: "check with bash"
+        run: bash -n builddep.sh
+      - name: "check with shellcheck"
+        run: shellcheck -x builddep.sh
+
+  distros:
+    name: "Container ${{ matrix.distro }}"
+    runs-on: "ubuntu-latest"
+    needs: syntaxcheck
+    strategy:
+      fail-fast: true
+      matrix:
+        distro: [
+          "alpine-3.12", "alpine-3.13",
+          "archlinux",
+          "centos-7", "centos-8",
+          "debian-bullseye", "debian-buster", "debian-testing",
+          "fedora-32", "fedora-33", "fedora-34", "fedora-35",
+          # "gentoo--stage3",
+          # OpenSUSE container works locally but hangs on GHA.
+          # "opensuse--tumbleweed",
+          "ubuntu-bionic", "ubuntu-focal", "ubuntu-groovy", "ubuntu-hirsute", "ubuntu-impish",
+        ]
+    steps:
+      - name: "checkout"
+        uses: "actions/checkout@v2"
+      - name: "build container with CPython build dependencies for ${{ matrix.distro }}"
+        run: |
+           set -xe
+           docker build . -f tests/Dockerfile.${{ matrix.distro }} -t builddep:${{ matrix.distro }}
       - name: "checkout CPython"
         uses: "actions/checkout@v2"
         with:
           repository: python/cpython
           path: cpython
           ref: main
-      - name: Run test in FreeBSD VM
-        uses: "vmactions/freebsd-vm@v0.1.5"
+      - name: "build CPython for ${{ matrix.distro }}"
+        run: |
+          set -xe
+          docker run -v ${GITHUB_WORKSPACE}/cpython:/cpython builddep:${{ matrix.distro }} | tee result-${{ matrix.distro }}.txt
+      - uses: actions/upload-artifact@v2
         with:
-          usesh: true
-          run: |
-            set -e
-            # pkg search -g \*
-            ./builddep.sh --debug
-            cd cpython
-            ./configure
-            make -j4
+          name: result
+          path: result-${{ matrix.distro }}.txt
+          if-no-files-found: error
+
+  # freebsd:
+  #   runs-on: macos-10.15
+  #   name: FreeBSD
+  #   strategy:
+  #     fail-fast: false
+  #   steps:
+  #     - name: checkout
+  #       uses: "actions/checkout@v2"
+  #     - name: "checkout CPython"
+  #       uses: "actions/checkout@v2"
+  #       with:
+  #         repository: python/cpython
+  #         path: cpython
+  #         ref: main
+  #     - name: Run test in FreeBSD VM
+  #       uses: "vmactions/freebsd-vm@v0.1.5"
+  #       with:
+  #         usesh: true
+  #         run: |
+  #           set -e
+  #           # pkg search -g \*
+  #           ./builddep.sh --debug
+  #           cd cpython
+  #           ./configure
+  #           make -j4
 
   macos:
-    name: "macOS"
+    name: "macOS brew"
     runs-on: macos-10.15
+    needs: syntaxcheck
     strategy:
       fail-fast: false
     steps:

@@ -71,6 +71,50 @@ check_command() {
     return
 }
 
+PKG_MGR=
+
+case "${SYSNAME}" in
+    Darwin)
+        # macOS platform
+        if check_command brew; then
+            # Homebrew
+            PKG_MGR="${SYSNAME}-brew"
+        elif check_command port; then
+            # port
+            PKG_MGR="${SYSNAME}-port"
+        fi
+        ;;
+    FreeBSD)
+        PKG_MGR="${SYSNAME}-pkg"
+        ;;
+    Linux)
+        if check_command apk; then
+            # Alpine
+            PKG_MGR="${SYSNAME}-apk"
+        elif check_command pacman; then
+            # Arch Linux
+            PKG_MGR="${SYSNAME}-pacman"
+        elif check_command apt; then
+            # Debian, Ubuntu
+            PKG_MGR="${SYSNAME}-apt"
+        elif check_command dnf; then
+            # Fedora, CentOS 8+, RHEL 8+
+            PKG_MGR="${SYSNAME}-dnf"
+        elif check_command yum; then
+            # RHEL 7 and CentOS 7
+            PKG_MGR="${SYSNAME}-yum"
+        elif check_command zypper; then
+            PKG_MGR="${SYSNAME}-zypper"
+        fi
+        ;;
+    *)
+        ;;
+esac
+
+if test "$OPT_DEBUG" = yes; then
+    echo "package manager: ${PKG_MGR}"
+fi
+
 # prepare environment, e.g. update package cache
 PREPARE_CMD=
 # update distro packages
@@ -82,25 +126,19 @@ INSTALL_EXTRAS_CMD=
 # cleanup, e.g. clear package cache
 CLEANUP_CMD=
 
-case "${SYSNAME}" in
-  Darwin)
-    # macOS platform
-    if check_command brew; then
-        # Homebrew
+case "$PKG_MGR" in
+    Darwin-brew)
+        # macOS Homebrew
         INSTALL_CMD="brew install pkgconfig openssl@1.1 xz gdbm"
-    elif check_command port; then
+        ;;
+    Darwin-port)
         INSTALL_CMD="port install pkgconfig openssl xz gdbm"
-    else
-        echo "Unsupported macOS installation, brew or port not detected." >&2
-        exit 2
-    fi
-    ;;
-  FreeBSD)
-    INSTALL_CMD="pkg install -y \
-        editline libffi lzma bzip2 gdbm openssl pkgconf sqlite3 tcl86 tk86"
-    ;;
-  Linux)
-    if check_command apk; then
+        ;;
+    FreeBSD-pkg)
+        INSTALL_CMD="pkg install -y \
+            editline libffi lzma bzip2 gdbm openssl pkgconf sqlite3 tcl86 tk86"
+        ;;
+    Linux-apk)
         # Alpine
         PREPARE_CMD="apk update"
         UPDATE_CMD="apk upgrade"
@@ -109,14 +147,17 @@ case "${SYSNAME}" in
             bzip2-dev gdbm-dev expat-dev libffi-dev libnsl-dev libtirpc-dev \
             ncurses-dev openssl-dev readline-dev sqlite-dev tcl-dev tk-dev \
             xz-dev zlib-dev"
-    elif check_command pacman; then
+        ;;
+    Linux-pacman)
         # Arch Linux
         PREPARE_CMD="pacman -Sy"
         UPDATE_CMD="pacman --noconfirm -Su"
         INSTALL_CMD="pacman --noconfirm -S \
-            gcc make pkg-config bzip2 gdbm expat libffi ncurses openssl readline sqlite3 tk"
+            gcc make pkg-config bzip2 gdbm expat libffi ncurses openssl \
+            readline sqlite3 tk"
         CLEANUP_CMD="pacman -Scc --noconfirm"
-    elif check_command apt; then
+        ;;
+    Linux-apt)
         # Debian, Ubuntu, and similar
         # apt build-deb requires deb-src entries in sources.list. They are not
         # present on user systems and there seems to be no apt command to enable
@@ -131,7 +172,8 @@ case "${SYSNAME}" in
             lzma lzma-dev tk-dev uuid-dev zlib1g-dev"
         INSTALL_EXTRAS_CMD="${apt} install gdb lcov ccache"
         CLEANUP_CMD="apt clean"
-    elif check_command dnf; then
+        ;;
+    Linux-dnf)
         # CentOS and RHEL need extra development packages from powertools
         # or Code Ready Builder repos.
         case "$ID" in
@@ -154,7 +196,8 @@ case "${SYSNAME}" in
         INSTALL_CMD="dnf build-dep -y ${dnf_args} python3"
         INSTALL_EXTRAS_CMD="dnf install -y ${dnf_args} ${dnf_extras}"
         CLEANUP_CMD="dnf clean all"
-    elif check_command yum; then
+        ;;
+    Linux-yum)
         # RHEL 7 and CentOS 7
         # to use openssl11 from EPEL:
         # yum install -y epel && yum install -y openssl11-devel
@@ -164,23 +207,19 @@ case "${SYSNAME}" in
         INSTALL_CMD="yum-builddep -y python3"
         INSTALL_EXTRAS_CMD="yum install -y lcov gdb ccache"
         CLEANUP_CMD="yum clean all"
-    elif check_command zypper; then
+        ;;
+    Linux-zypper)
         INSTALL_CMD="zypper install -y \
             gcc make git pkg-config \
             libbz2-devel libffi-devel libnsl-devel libuuid-devel sqlite3-devel \
             gdbm-devel openssl-devel ncurses-devel readline-devel tk-devel \
             xz-devel zlib-devel"
         CLEANUP_CMD="zypper clean --all"
-    else
-        echo "Unsupported Linux platform ($PRETTY_NAME)" >&2
+        ;;
+    *)
+        echo "ERROR: unsupported platform ${SYSNAME} ${PRETTY_NAME}" >&2
         exit 2
-    fi
-    # end of Linux block
-    ;;
-  *)
-    echo "Unsupported system ${SYSNAME}" >&2
-    exit 2
-    ;;
+        ;;
 esac
 
 if test -n "$PREPARE_CMD"; then
