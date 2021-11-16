@@ -7,7 +7,8 @@ LABEL org.opencontainers.image.title="CPython build dependencies for centos:8"
 LABEL org.opencontainers.image.description="Container with CPython build dependencies"
 LABEL org.opencontainers.image.usage="podman run --rm -ti -v .:/cpython:Z quay.io/tiran/cpythonbuild:centos-8"
 
-ENV PYBUILDDEP_DISTRO="centos:8"
+ENV PYBUILDDEP_FROMDISTRO="centos:8"
+ENV PYBUILDDEP_DISTROTAG="centos-8"
 VOLUME ["/cpython"]
 
 COPY tests/entry.sh /
