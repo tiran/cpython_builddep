@@ -1,5 +1,13 @@
 FROM centos:7
 
+LABEL org.opencontainers.image.base.name="centos:7"
+LABEL org.opencontainers.image.authors="Christian Heimes"
+LABEL org.opencontainers.image.url="https://github.com/tiran/cpython_builddep/"
+LABEL org.opencontainers.image.title="CPython build dependencies for centos:7"
+LABEL org.opencontainers.image.description="Container with CPython build dependencies"
+LABEL org.opencontainers.image.usage="podman run --rm -ti -v .:/cpython:Z quay.io/tiran/cpythonbuild:centos-7"
+
+ENV PYBUILDDEP_DISTRO="centos:7"
 VOLUME ["/cpython"]
 
 COPY tests/entry.sh /

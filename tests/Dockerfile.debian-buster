@@ -1,5 +1,13 @@
 FROM debian:buster
 
+LABEL org.opencontainers.image.base.name="debian:buster"
+LABEL org.opencontainers.image.authors="Christian Heimes"
+LABEL org.opencontainers.image.url="https://github.com/tiran/cpython_builddep/"
+LABEL org.opencontainers.image.title="CPython build dependencies for debian:buster"
+LABEL org.opencontainers.image.description="Container with CPython build dependencies"
+LABEL org.opencontainers.image.usage="podman run --rm -ti -v .:/cpython:Z quay.io/tiran/cpythonbuild:debian-buster"
+
+ENV PYBUILDDEP_DISTRO="debian:buster"
 VOLUME ["/cpython"]
 
 COPY tests/entry.sh /

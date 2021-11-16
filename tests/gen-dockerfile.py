@@ -6,6 +6,14 @@ import yaml
 TEMPLATE = """\
 FROM {fromdistro}
 
+LABEL org.opencontainers.image.base.name="{fromdistro}"
+LABEL org.opencontainers.image.authors="Christian Heimes"
+LABEL org.opencontainers.image.url="https://github.com/tiran/cpython_builddep/"
+LABEL org.opencontainers.image.title="CPython build dependencies for {fromdistro}"
+LABEL org.opencontainers.image.description="Container with CPython build dependencies"
+LABEL org.opencontainers.image.usage="podman run --rm -ti -v .:/cpython:Z quay.io/tiran/cpythonbuild:{distro}"
+
+ENV PYBUILDDEP_DISTRO="{fromdistro}"
 VOLUME ["/cpython"]
 
 COPY tests/entry.sh /
@@ -26,4 +34,4 @@ distros = ci["jobs"]["distros"]["strategy"]["matrix"]["distro"]
 for distro in distros:
     fromdistro = distro.replace("--", "/").replace("-", ":")
     with open(os.path.join(here, f"Dockerfile.{distro}"), "w") as f:
-        f.write(TEMPLATE.format(fromdistro=fromdistro))
+        f.write(TEMPLATE.format(fromdistro=fromdistro, distro=distro))
