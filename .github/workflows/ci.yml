@@ -6,6 +6,7 @@ on:
     branches: ["main"]
   pull_request:
     branches: ["main"]
+    types: [opened, synchronize, reopened, closed]
   repository_dispatch:
     types: rebuild
   workflow_dispatch:
@@ -88,14 +89,14 @@ jobs:
           path: ${{ env.EXPORT_TAR }}
           if-no-files-found: error
       - name: Login to quay.io Container Registry
-        if: github.event_name == 'pull_request' && github.event.action == 'closed' && github.event.pull_request.merged == true
+        #if: github.event_name == 'pull_request' && github.event.action == 'closed' && github.event.pull_request.merged == true
         uses: docker/login-action@v1 
         with:
           registry: quay.io
           username: ${{ secrets.QUAY_LOGIN }}
           password: ${{ secrets.QUAY_TOKEN }}
       - name: Upload container image
-        if: github.event_name == 'pull_request' && github.event.action == 'closed' && github.event.pull_request.merged == true
+        #if: github.event_name == 'pull_request' && github.event.action == 'closed' && github.event.pull_request.merged == true
         uses: docker/build-push-action@v2
         with:
           context: .
