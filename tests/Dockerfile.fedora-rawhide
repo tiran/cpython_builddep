@@ -1,9 +1,0 @@
-FROM fedora:rawhide
-
-VOLUME ["/cpython"]
-
-COPY builddep.sh /
-RUN ["/builddep.sh", "--extras", "--cleanup"]
-
-COPY entry.sh /
-ENTRYPOINT ["/entry.sh"]
