@@ -1,5 +1,4 @@
-#!/bin/sh -l
-# use login shell to load profiles and have ccache in PATH
+#!/bin/sh
 
 # fail on error, show comands
 set -ex
@@ -7,9 +6,11 @@ set -ex
 # trap and kill on CTRL+C
 trap 'pkill -P $$; exit 255;' TERM INT
 
-SRCDIR=/cpython
-SENTINEL="${SRCDIR}/pyconfig.h.in"
+# for PYBUILDDEP_SRCDIR, PATH, CCACHE_DIR, MAKEFLAGS
+# shellcheck source=./tests/activate
+. ./activate
 
+SENTINEL="${PYBUILDDEP_SRCDIR}/pyconfig.h.in"
 if ! test -e "${SENTINEL}"; then
     echo "${SENTINEL} missing" >&2
     exit 1
@@ -19,8 +20,6 @@ if test -z "$PYBUILDDEP_DISTROTAG"; then
     echo "PYBUILDDEP_DISTROTAG not set" >&2
     exit 2
 fi
-
-BUILDDIR="${SRCDIR}/builddep/${PYBUILDDEP_DISTROTAG}-$(uname -m)"
 
 case "$PYBUILDDEP_DISTROTAG" in
     centos-7|rhel-7)
@@ -32,17 +31,11 @@ case "$PYBUILDDEP_DISTROTAG" in
         ;;
 esac
 
-# use all CPU cores
-MAKEFLAGS="-j$(nproc)"
-export MAKEFLAGS
-
-# export ccache dir
-CCACHE_DIR="${SRCDIR}/builddep/.ccache"
-mkdir -p "${CCACHE_DIR}"
-export CCACHE_DIR
-
 # use out-of-tree builds
+BUILDDIR="${PYBUILDDEP_SRCDIR}/builddep/${PYBUILDDEP_DISTROTAG}-$(uname -m)"
+
 mkdir -p "${BUILDDIR}"
 cd "${BUILDDIR}"
-"${SRCDIR}/configure" -C
+
+"${PYBUILDDEP_SRCDIR}/configure" -C
 make

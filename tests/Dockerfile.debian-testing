@@ -11,7 +11,7 @@ ENV PYBUILDDEP_FROMDISTRO="debian:testing"
 ENV PYBUILDDEP_DISTROTAG="debian-testing"
 VOLUME ["/cpython"]
 
-COPY tests/entry.sh /
+COPY tests/entry.sh tests/activate /
 CMD ["/entry.sh"]
 
 COPY builddep.sh /

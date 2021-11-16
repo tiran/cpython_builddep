@@ -11,7 +11,7 @@ ENV PYBUILDDEP_FROMDISTRO="centos:8"
 ENV PYBUILDDEP_DISTROTAG="centos-8"
 VOLUME ["/cpython"]
 
-COPY tests/entry.sh /
+COPY tests/entry.sh tests/activate /
 CMD ["/entry.sh"]
 
 COPY builddep.sh /
