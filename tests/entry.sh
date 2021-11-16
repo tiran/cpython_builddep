@@ -20,7 +20,7 @@ if test -z "$PYBUILDDEP_DISTROTAG"; then
     exit 2
 fi
 
-BUILDDIR="${SRCDIR}/builddep/${PYBUILDDEP_DISTROTAG}"
+BUILDDIR="${SRCDIR}/builddep/${PYBUILDDEP_DISTROTAG}-$(uname -m)"
 
 case "$PYBUILDDEP_DISTROTAG" in
     centos-7|rhel-7)
