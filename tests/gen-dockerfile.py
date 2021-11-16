@@ -9,7 +9,7 @@ FROM {fromdistro}
 VOLUME ["/cpython"]
 
 COPY tests/entry.sh /
-ENTRYPOINT ["/entry.sh"]
+CMD ["/entry.sh"]
 
 COPY builddep.sh /
 RUN ["/builddep.sh", "--update", "--extras", "--cleanup"]
