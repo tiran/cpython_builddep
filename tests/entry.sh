@@ -1,5 +1,11 @@
-#!/bin/sh
+#!/bin/sh -l
+# use login shell to load profiles and have ccache in PATH
+
+# fail on error, show comands
 set -ex
+
+# trap and kill on CTRL+C
+trap 'pkill -P $$; exit 255;' TERM INT
 
 SRCDIR=/cpython
 SENTINEL="${SRCDIR}/pyconfig.h.in"
@@ -30,9 +36,13 @@ esac
 MAKEFLAGS="-j$(nproc)"
 export MAKEFLAGS
 
+# export ccache dir
+CCACHE_DIR="${SRCDIR}/builddep/.ccache"
+mkdir -p "${CCACHE_DIR}"
+export CCACHE_DIR
+
 # use out-of-tree builds
 mkdir -p "${BUILDDIR}"
 cd "${BUILDDIR}"
 "${SRCDIR}/configure" -C
-make clean
 make
