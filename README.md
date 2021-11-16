@@ -58,3 +58,26 @@ sed -i 's/PKG_CONFIG openssl /PKG_CONFIG openssl11 /g' configure
 * Gentoo
 * macOS brew
 * SUSE
+
+## Build containers
+
+Containers are hosted at https://quay.io/repository/tiran/cpythonbuild
+
+### Usage
+
+The default entry point of a build container runs ``configure -C``,
+``make clean``, and parallel out-of-tree ``make`` in ``builddep/$tag``.
+
+```
+cd cpython
+```
+
+```
+podman run -ti --rm -v .:/cpython:Z quay.io/tiran/cpythonbuild:fedora-35
+```
+
+```
+docker run -ti --rm -v .:/cpython quay.io/tiran/cpythonbuild:fedora-35
+```
+
+The default entry script also sets up ``CCACHE_DIR=/cpython/builddep/.ccache``.
