@@ -7,7 +7,8 @@ LABEL org.opencontainers.image.title="CPython build dependencies for fedora:32"
 LABEL org.opencontainers.image.description="Container with CPython build dependencies"
 LABEL org.opencontainers.image.usage="podman run --rm -ti -v .:/cpython:Z quay.io/tiran/cpythonbuild:fedora-32"
 
-ENV PYBUILDDEP_DISTRO="fedora:32"
+ENV PYBUILDDEP_FROMDISTRO="fedora:32"
+ENV PYBUILDDEP_DISTROTAG="fedora-32"
 VOLUME ["/cpython"]
 
 COPY tests/entry.sh /

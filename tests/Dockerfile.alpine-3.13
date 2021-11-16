@@ -7,7 +7,8 @@ LABEL org.opencontainers.image.title="CPython build dependencies for alpine:3.13
 LABEL org.opencontainers.image.description="Container with CPython build dependencies"
 LABEL org.opencontainers.image.usage="podman run --rm -ti -v .:/cpython:Z quay.io/tiran/cpythonbuild:alpine-3.13"
 
-ENV PYBUILDDEP_DISTRO="alpine:3.13"
+ENV PYBUILDDEP_FROMDISTRO="alpine:3.13"
+ENV PYBUILDDEP_DISTROTAG="alpine-3.13"
 VOLUME ["/cpython"]
 
 COPY tests/entry.sh /

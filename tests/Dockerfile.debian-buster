@@ -7,7 +7,8 @@ LABEL org.opencontainers.image.title="CPython build dependencies for debian:bust
 LABEL org.opencontainers.image.description="Container with CPython build dependencies"
 LABEL org.opencontainers.image.usage="podman run --rm -ti -v .:/cpython:Z quay.io/tiran/cpythonbuild:debian-buster"
 
-ENV PYBUILDDEP_DISTRO="debian:buster"
+ENV PYBUILDDEP_FROMDISTRO="debian:buster"
+ENV PYBUILDDEP_DISTROTAG="debian-buster"
 VOLUME ["/cpython"]
 
 COPY tests/entry.sh /

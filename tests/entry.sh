@@ -1,16 +1,24 @@
 #!/bin/sh
 set -ex
 
-SENTINEL=${SRC}/pyconfig.h.in
+SRCDIR=/cpython
+SENTINEL="${SRCDIR}/pyconfig.h.in"
 
-if ! test -e /cpython/pyconfig.h.in; then
-    echo "/cpython/pyconfig.h.in missing" >&2
+if ! test -e "${SENTINEL}"; then
+    echo "${SENTINEL} missing" >&2
     exit 1
 fi
 
-case "$PYBUILDDEP_DISTRO" in
-    centos:7|rhel:7)
-        # OpenSSL 1.1.1 missing
+if test -z "$PYBUILDDEP_DISTROTAG"; then
+    echo "PYBUILDDEP_DISTROTAG not set" >&2
+    exit 2
+fi
+
+BUILDDIR="${SRCDIR}/builddep/${PYBUILDDEP_DISTROTAG}"
+
+case "$PYBUILDDEP_DISTROTAG" in
+    centos-7|rhel-7)
+        # no strict build, OpenSSL 1.1.1 missing
         ;;
     *)
         # fail on missing stdlib extension module
@@ -18,6 +26,13 @@ case "$PYBUILDDEP_DISTRO" in
         ;;
 esac
 
-cd /cpython
-./configure -C
-make -j4
+# use all CPU cores
+MAKEFLAGS="-j$(nproc)"
+export MAKEFLAGS
+
+# use out-of-tree builds
+mkdir -p "${BUILDDIR}"
+cd "${BUILDDIR}"
+"${SRCDIR}/configure" -C
+make clean
+make

@@ -11,9 +11,10 @@ LABEL org.opencontainers.image.authors="Christian Heimes"
 LABEL org.opencontainers.image.url="https://github.com/tiran/cpython_builddep/"
 LABEL org.opencontainers.image.title="CPython build dependencies for {fromdistro}"
 LABEL org.opencontainers.image.description="Container with CPython build dependencies"
-LABEL org.opencontainers.image.usage="podman run --rm -ti -v .:/cpython:Z quay.io/tiran/cpythonbuild:{distro}"
+LABEL org.opencontainers.image.usage="podman run --rm -ti -v .:/cpython:Z quay.io/tiran/cpythonbuild:{distrotag}"
 
-ENV PYBUILDDEP_DISTRO="{fromdistro}"
+ENV PYBUILDDEP_FROMDISTRO="{fromdistro}"
+ENV PYBUILDDEP_DISTROTAG="{distrotag}"
 VOLUME ["/cpython"]
 
 COPY tests/entry.sh /
@@ -31,7 +32,7 @@ with open(ci_yml) as f:
 
 distros = ci["jobs"]["distros"]["strategy"]["matrix"]["distro"]
 
-for distro in distros:
-    fromdistro = distro.replace("--", "/").replace("-", ":")
-    with open(os.path.join(here, f"Dockerfile.{distro}"), "w") as f:
-        f.write(TEMPLATE.format(fromdistro=fromdistro, distro=distro))
+for distrotag in distros:
+    fromdistro = distrotag.replace("--", "/").replace("-", ":")
+    with open(os.path.join(here, f"Dockerfile.{distrotag}"), "w") as f:
+        f.write(TEMPLATE.format(fromdistro=fromdistro, distrotag=distrotag))
