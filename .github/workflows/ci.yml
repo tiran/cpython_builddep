@@ -29,9 +29,9 @@ jobs:
            sudo apt update
            sudo apt install -y bash dash shellcheck
       - name: "check with dash"
-        run: dash -n builddep.sh tests/entry.sh
+        run: dash -n builddep.sh tests/entry.sh tests/activate
       - name: "check with bash"
-        run: bash -n builddep.sh tests/entry.sh
+        run: bash -n builddep.sh tests/entry.sh tests/activate
       - name: "check with shellcheck"
         run: shellcheck -x builddep.sh tests/entry.sh
 
@@ -129,7 +129,9 @@ jobs:
           repository: python/cpython
           path: cpython
           ref: main
-      - name: Cache ccache
+      - name: Create ccache dir
+        run: mkdir -p ${GITHUB_WORKSPACE}/cpython/builddep/.ccache
+      - name: Cache ccache dir
         uses: actions/cache@v2
         with:
           path: ${GITHUB_WORKSPACE}/cpython/builddep/.ccache

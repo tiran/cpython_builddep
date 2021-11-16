@@ -11,7 +11,7 @@ ENV PYBUILDDEP_FROMDISTRO="fedora:33"
 ENV PYBUILDDEP_DISTROTAG="fedora-33"
 VOLUME ["/cpython"]
 
-COPY tests/entry.sh /
+COPY tests/entry.sh tests/activate /
 CMD ["/entry.sh"]
 
 COPY builddep.sh /

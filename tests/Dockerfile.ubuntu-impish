@@ -11,7 +11,7 @@ ENV PYBUILDDEP_FROMDISTRO="ubuntu:impish"
 ENV PYBUILDDEP_DISTROTAG="ubuntu-impish"
 VOLUME ["/cpython"]
 
-COPY tests/entry.sh /
+COPY tests/entry.sh tests/activate /
 CMD ["/entry.sh"]
 
 COPY builddep.sh /

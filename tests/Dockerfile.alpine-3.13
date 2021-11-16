@@ -11,7 +11,7 @@ ENV PYBUILDDEP_FROMDISTRO="alpine:3.13"
 ENV PYBUILDDEP_DISTROTAG="alpine-3.13"
 VOLUME ["/cpython"]
 
-COPY tests/entry.sh /
+COPY tests/entry.sh tests/activate /
 CMD ["/entry.sh"]
 
 COPY builddep.sh /

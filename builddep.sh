@@ -161,6 +161,7 @@ case "$PKG_MGR" in
             bzip2-dev gdbm-dev expat-dev libffi-dev libnsl-dev libtirpc-dev \
             ncurses-dev openssl-dev readline-dev sqlite-dev tcl-dev tk-dev \
             xz-dev zlib-dev"
+        INSTALL_EXTRAS_CMD="apk add ccache gdb"
         ;;
     Linux-pacman)
         # Arch Linux

@@ -17,7 +17,7 @@ ENV PYBUILDDEP_FROMDISTRO="{fromdistro}"
 ENV PYBUILDDEP_DISTROTAG="{distrotag}"
 VOLUME ["/cpython"]
 
-COPY tests/entry.sh /
+COPY tests/entry.sh tests/activate /
 CMD ["/entry.sh"]
 
 COPY builddep.sh /
