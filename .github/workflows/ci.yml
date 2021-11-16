@@ -36,7 +36,7 @@ jobs:
         run: shellcheck -x builddep.sh tests/entry.sh
 
   distros:
-    name: "Container ${{ matrix.distro }}"
+    name: "${{ matrix.distro }} on ${{ matrix.platform }}"
     runs-on: "ubuntu-latest"
     needs: syntaxcheck
     strategy:
@@ -47,12 +47,52 @@ jobs:
           "archlinux",
           "centos-7", "centos-8",
           "debian-bullseye", "debian-buster", "debian-testing",
-          "fedora-32", "fedora-33", "fedora-34", "fedora-35",
+          "fedora-33", "fedora-34", "fedora-35",
           # "gentoo--stage3",
           # OpenSUSE container works locally but hangs on GHA.
           # "opensuse--tumbleweed",
-          "ubuntu-bionic", "ubuntu-focal", "ubuntu-groovy", "ubuntu-hirsute", "ubuntu-impish",
+          # 18.04, 20.04, 21.04, 21.10
+          "ubuntu-bionic", "ubuntu-focal", "ubuntu-hirsute", "ubuntu-impish",
         ]
+        platform: [
+          "linux/amd64"
+        ]
+        exclude:
+          # ArchLinux does not offer arm64 and s390x containers
+          - distro: "archlinux"
+            platform: "linux/arm64"
+          - distro: "archlinux"
+            platform: "linux/s390x"
+          # CentOS does not offer s390x containers
+          - distro: "centos-7"
+            platform: "linux/s390x"
+          - distro: "centos-8"
+            platform: "linux/s390x"
+        include:
+          # speedup: only build emulated archs for some distros
+          # Alpine
+          - distro: "alpine-3.13"
+            platform: "linux/arm64"
+          - distro: "alpine-3.13"
+            platform: "linux/s390x"
+          # Fedora
+          - distro: "fedora-35"
+            platform: "linux/arm64"
+          - distro: "fedora-35"
+            platform: "linux/ppc64le"
+          - distro: "fedora-35"
+            platform: "linux/s390x"
+          # Debian
+          - distro: "debian-bullseye"
+            platform: "linux/386"
+          - distro: "debian-bullseye"
+            platform: "linux/arm64"
+          - distro: "debian-bullseye"
+            platform: "linux/ppc64le"
+          - distro: "debian-bullseye"
+            platform: "linux/mips64le"
+          - distro: "debian-bullseye"
+            platform: "linux/s390x"
     env:
       IMAGE_TAG: "quay.io/tiran/cpythonbuild:${{ matrix.distro }}"
       MATRIX_DISTRO: ${{ matrix.distro }}
@@ -62,6 +102,11 @@ jobs:
         uses: "actions/checkout@v2"
       - name: Set up Docker Buildx
         uses: docker/setup-buildx-action@v1
+      - name: Set up Docker QEMU
+        uses: docker/setup-qemu-action@master
+        if: ${{ matrix.platform }} != 'linux/amd64'
+        with:
+          platforms: ${{ matrix.platform }}
       - name: set env
         run: |
           echo "IMAGE_CREATED=$(date --rfc-3339=seconds --utc)" >> $GITHUB_ENV
@@ -71,7 +116,7 @@ jobs:
         with:
           context: .
           file: tests/Dockerfile.${{ matrix.distro }}
-          platforms: linux/amd64
+          platforms: ${{ matrix.platform }}
           push: false
           load: true
           tags: ${{ env.IMAGE_TAG }}
@@ -84,8 +129,13 @@ jobs:
           repository: python/cpython
           path: cpython
           ref: main
-      - name: "build CPython with ${{ env.IMAGE_TAG }}"
-        run: docker run --rm -v ${GITHUB_WORKSPACE}/cpython:/cpython ${{ env.IMAGE_TAG }}
+      - name: Cache ccache
+        uses: actions/cache@v2
+        with:
+          path: ${GITHUB_WORKSPACE}/cpython/builddep/.ccache
+          key: ${{ matrix.distro }}-${{ matrix.platform }}
+      - name: "build CPython with ${{ env.IMAGE_TAG }} on ${{ matrix.platform }}"
+        run: docker run --platform ${{ matrix.platform }} --rm -v ${GITHUB_WORKSPACE}/cpython:/cpython ${{ env.IMAGE_TAG }}
       #- name: "save container to tar ball"
       #  run: docker save -o ${{ env.EXPORT_TAR }} ${{ env.IMAGE_TAG }}
       #- name: "upload container artifact"
@@ -107,7 +157,7 @@ jobs:
         with:
           context: .
           file: tests/Dockerfile.${{ matrix.distro }}
-          platforms: linux/amd64
+          platforms: ${{ matrix.platform }}
           push: true
           tags: ${{ env.IMAGE_TAG }}
 
