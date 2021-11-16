@@ -55,7 +55,7 @@ jobs:
           "ubuntu-bionic", "ubuntu-focal", "ubuntu-hirsute", "ubuntu-impish",
         ]
         platform: [
-          "linux/amd64"
+          "linux/amd64", "linux/arm64", "linux/s390x"
         ]
         exclude:
           # ArchLinux does not offer arm64 and s390x containers
@@ -68,38 +68,50 @@ jobs:
             platform: "linux/s390x"
           - distro: "centos-8"
             platform: "linux/s390x"
+          # Fedora package installation on arm64 is slow
+          - distro: "fedora-33"
+            platform: "linux/arm64"
+          - distro: "fedora-34"
+            platform: "linux/arm64"
+          - distro: "fedora-35"
+            platform: "linux/arm64"
         include:
           # speedup: only build emulated archs for some distros
-          # Alpine
+          # Alpine (test arm64)
           - distro: "alpine-3.13"
             platform: "linux/arm64"
-          - distro: "alpine-3.13"
-            platform: "linux/s390x"
-          # Fedora
-          - distro: "fedora-35"
-            platform: "linux/arm64"
+            runbuild: true
+          # Fedora (test ppc64le, s390x)
           - distro: "fedora-35"
             platform: "linux/ppc64le"
+            runbuild: true
           - distro: "fedora-35"
             platform: "linux/s390x"
-          # Debian
+            runbuild: true
+          # Debian (test 386, mips64le)
           - distro: "debian-bullseye"
             platform: "linux/386"
-          - distro: "debian-bullseye"
-            platform: "linux/arm64"
+            runbuild: true
           - distro: "debian-bullseye"
             platform: "linux/ppc64le"
+            runbuild: false
           - distro: "debian-bullseye"
             platform: "linux/mips64le"
-          - distro: "debian-bullseye"
-            platform: "linux/s390x"
-    env:
-      IMAGE_TAG: "quay.io/tiran/cpythonbuild:${{ matrix.distro }}"
-      MATRIX_DISTRO: ${{ matrix.distro }}
-      EXPORT_TAR: "/tmp/tiran-cpythonbuild-${{ matrix.distro }}.tar"
+            runbuild: true
     steps:
+      - name: Set environment
+        run: |
+          set -e
+          echo "IMAGE_TAG=quay.io/tiran/cpythonbuild:${{ matrix.distro }}" >> $GITHUB_ENV
+          echo "CCACHE_DIR=$GITHUB_WORKSPACE/cpython/builddep/.ccache"  >> $GITHUB_ENV
+          echo "CPYTHON_DIR=$GITHUB_WORKSPACE/cpython" >> $GITHUB_ENV
+          echo "MATRIX_DISTRO=${{ matrix.distro }}" >> $GITHUB_ENV
+          echo "IMAGE_CREATED=$(date --rfc-3339=seconds --utc)" >> $GITHUB_ENV
+          echo "IMAGE_DISTRO=$(echo $MATRIX_DISTRO | sed s,--,/,g | sed s,-,:,g)" >> $GITHUB_ENV
       - name: "checkout"
         uses: "actions/checkout@v2"
+      - name: Install ccache
+        run: sudo apt install -y ccache
       - name: Set up Docker Buildx
         uses: docker/setup-buildx-action@v1
       - name: Set up Docker QEMU
@@ -107,10 +119,6 @@ jobs:
         if: ${{ matrix.platform }} != 'linux/amd64'
         with:
           platforms: ${{ matrix.platform }}
-      - name: set env
-        run: |
-          echo "IMAGE_CREATED=$(date --rfc-3339=seconds --utc)" >> $GITHUB_ENV
-          echo "IMAGE_DISTRO=$(echo $MATRIX_DISTRO | sed s,--,/,g | sed s,-,:,g)"
       - name: "build container image"
         uses: docker/build-push-action@v2
         with:
@@ -127,25 +135,26 @@ jobs:
         uses: "actions/checkout@v2"
         with:
           repository: python/cpython
-          path: cpython
+          path: ${{ env.CPYTHON_DIR }}
           ref: main
-      - name: Create ccache dir
-        run: mkdir -p ${GITHUB_WORKSPACE}/cpython/builddep/.ccache
+      - name: Get commit hash from CPython checkout
+        run: echo "CPYTHON_SHA=$(git --git-dir=${{ env.CPYTHON_DIR }}/.git rev-parse HEAD)" >> $GITHUB_ENV
       - name: Cache ccache dir
         uses: actions/cache@v2
         with:
-          path: ${GITHUB_WORKSPACE}/cpython/builddep/.ccache
-          key: ${{ matrix.distro }}-${{ matrix.platform }}
+          path: |
+            ${{ env.CCACHE_DIR }}
+          key: ${{ matrix.distro }}-${{ matrix.platform }}-${{ env.CPYTHON_SHA }}
+          restore-keys: |
+            ${{ matrix.distro }}-${{ matrix.platform }}-
+      - name: ccache stats before build
+        run: ccache -s
+      # qemu builds are suuuuuper slow, only test some combinations of arch and distro
       - name: "build CPython with ${{ env.IMAGE_TAG }} on ${{ matrix.platform }}"
-        run: docker run --platform ${{ matrix.platform }} --rm -v ${GITHUB_WORKSPACE}/cpython:/cpython ${{ env.IMAGE_TAG }}
-      #- name: "save container to tar ball"
-      #  run: docker save -o ${{ env.EXPORT_TAR }} ${{ env.IMAGE_TAG }}
-      #- name: "upload container artifact"
-      #  uses: actions/upload-artifact@v2
-      #  with:
-      #    name: image
-      #    path: ${{ env.EXPORT_TAR }}
-      #    if-no-files-found: error
+        if: matrix.platform == 'linux/amd64' || matrix.runbuild == 'true'
+        run: docker run --platform ${{ matrix.platform }} --rm -v ${{ env.CPYTHON_DIR }}:/cpython ${{ env.IMAGE_TAG }}
+      - name: ccache stats after build
+        run: ccache -s
       - name: Login to quay.io Container Registry
         if: github.event_name == 'pull_request' && github.event.action == 'closed' && github.event.pull_request.merged == true
         uses: docker/login-action@v1 
