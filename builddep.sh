@@ -190,10 +190,13 @@ case "$PKG_MGR" in
                 dnf_extras="gdb ccache lcov"
                 ;;
         esac
+        # remove some large, unnecessary dependencies
+        dnf_remove="dnf --setopt protected_packages=dnf remove -y \
+            autoconf glibc-all-langpacks desktop-file-utils tix-devel systemd valgrind"
         # build-dep is provided by core plugins
         PREPARE_CMD="dnf install -y dnf-plugins-core make"
         UPDATE_CMD="dnf update -y ${dnf_args}"
-        INSTALL_CMD="dnf build-dep -y ${dnf_args} python3"
+        INSTALL_CMD="dnf build-dep -y ${dnf_args} python3 && ${dnf_remove}"
         INSTALL_EXTRAS_CMD="dnf install -y ${dnf_args} ${dnf_extras}"
         CLEANUP_CMD="dnf clean all"
         ;;
@@ -223,19 +226,19 @@ case "$PKG_MGR" in
 esac
 
 if test -n "$PREPARE_CMD"; then
-    $PREPARE_CMD
+    eval "$PREPARE_CMD"
 fi
 
 if test "$OPT_UPDATE" = "yes" -a -n "$UPDATE_CMD"; then
-    $UPDATE_CMD
+    eval "$UPDATE_CMD"
 fi
 
-$INSTALL_CMD
+eval "$INSTALL_CMD"
 
 if test "$OPT_EXTRAS" = "yes" -a -n "$INSTALL_EXTRAS_CMD"; then
-    $INSTALL_EXTRAS_CMD
+    eval "$INSTALL_EXTRAS_CMD"
 fi
 
 if test "$OPT_CLEANUP" = "yes" -a -n "$CLEANUP_CMD"; then
-    $CLEANUP_CMD
+    eval "$CLEANUP_CMD"
 fi
