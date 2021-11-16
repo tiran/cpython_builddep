@@ -88,24 +88,38 @@ case "${SYSNAME}" in
         PKG_MGR="${SYSNAME}-pkg"
         ;;
     Linux)
-        if check_command apk; then
-            # Alpine
-            PKG_MGR="${SYSNAME}-apk"
-        elif check_command pacman; then
-            # Arch Linux
-            PKG_MGR="${SYSNAME}-pacman"
-        elif check_command apt; then
-            # Debian, Ubuntu
-            PKG_MGR="${SYSNAME}-apt"
-        elif check_command dnf; then
-            # Fedora, CentOS 8+, RHEL 8+
-            PKG_MGR="${SYSNAME}-dnf"
-        elif check_command yum; then
-            # RHEL 7 and CentOS 7
-            PKG_MGR="${SYSNAME}-yum"
-        elif check_command zypper; then
-            PKG_MGR="${SYSNAME}-zypper"
-        fi
+        case "$ID $ID_LIKE" in
+            alpine*)
+                if check_command apk; then
+                    PKG_MGR="${SYSNAME}-apk"
+                fi
+                ;;
+            arch*)
+                if check_command pacman; then
+                    PKG_MGR="${SYSNAME}-pacman"
+                fi
+                ;;
+            *debian* | *ubuntu*)
+                if check_command apt; then
+                    # Debian, Ubuntu, Mint, Raspbian
+                    PKG_MGR="${SYSNAME}-apt"
+                fi
+                ;;
+            *fedora*)
+                if check_command dnf; then
+                    # Fedora, CentOS 8+, RHEL 8+
+                    PKG_MGR="${SYSNAME}-dnf"
+                elif check_command yum; then
+                    # RHEL 7 and CentOS 7
+                    PKG_MGR="${SYSNAME}-yum"
+                fi
+                ;;
+            *suse*)
+                if check_command zypper; then
+                    PKG_MGR="${SYSNAME}-zypper"
+                fi
+                ;;
+        esac
         ;;
     *)
         ;;
