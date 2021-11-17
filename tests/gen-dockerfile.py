@@ -30,9 +30,11 @@ ci_yml = os.path.join(here, os.pardir, ".github", "workflows", "ci.yml")
 with open(ci_yml) as f:
     ci = yaml.load(f, Loader=yaml.SafeLoader)
 
-distros = ci["jobs"]["distros"]["strategy"]["matrix"]["distro"]
+includes = ci["jobs"]["distros"]["strategy"]["matrix"]["include"]
 
-for distrotag in distros:
+for include in includes:
+    distrotag = include["distro"]
     fromdistro = distrotag.replace("--", "/").replace("-", ":")
     with open(os.path.join(here, f"Dockerfile.{distrotag}"), "w") as f:
         f.write(TEMPLATE.format(fromdistro=fromdistro, distrotag=distrotag))
+    print(f"* quay.io/tiran/cpythonbuild:{distrotag} ({include['platforms'].replace(',', ', ')})")
