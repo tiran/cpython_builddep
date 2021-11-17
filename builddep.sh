@@ -127,6 +127,7 @@ esac
 
 if test "$OPT_DEBUG" = yes; then
     echo "package manager: ${PKG_MGR}"
+    echo ""
 fi
 
 # prepare environment, e.g. update package cache
@@ -194,25 +195,26 @@ case "$PKG_MGR" in
         case "$ID" in
             centos)
                 dnf_args="--enablerepo=powertools"
-                dnf_extras="gdb"
+                INSTALL_EXTRAS_CMD="dnf install -y epel-release && dnf install -y ccache gdb"
                 ;;
             rhel)
                 dnf_args="--enablerepo=rhel-CRB"
-                dnf_extras="gdb"
+                INSTALL_EXTRAS_CMD="dnf install -y gdb"
                 ;;
             *)
                 dnf_args=""
-                dnf_extras="gdb ccache lcov"
+                INSTALL_EXTRAS_CMD="dnf install -y gdb ccache lcov"
                 ;;
         esac
-        # remove some large, unnecessary dependencies
-        dnf_remove="dnf --setopt protected_packages=dnf remove -y \
-            autoconf glibc-all-langpacks desktop-file-utils tix-devel systemd valgrind"
-        # build-dep is provided by core plugins
-        PREPARE_CMD="dnf install -y dnf-plugins-core make"
+        # PREPARE_CMD="dnf install -y dnf-plugins-core"
         UPDATE_CMD="dnf update -y ${dnf_args}"
-        INSTALL_CMD="dnf build-dep -y ${dnf_args} python3 && ${dnf_remove}"
-        INSTALL_EXTRAS_CMD="dnf install -y ${dnf_args} ${dnf_extras}"
+        # "dnf build-dep python3" installs large deps like valgrind and systemd
+        INSTALL_CMD="dnf install -y ${dnf_args} \
+            gcc make pkgconfig git-core tzdata \
+            bluez-libs-devel bzip2-devel expat-devel gdbm-devel libffi-devel \
+            libnsl2-devel libuuid-devel ncurses-devel openssl-devel \
+            readline-devel sqlite-devel tcl-devel tk-devel xz-devel \
+            zlib-devel"
         CLEANUP_CMD="dnf clean all"
         ;;
     Linux-yum)
@@ -220,10 +222,12 @@ case "$PKG_MGR" in
         # to use openssl11 from EPEL:
         # yum install -y epel && yum install -y openssl11-devel
         # sed -i 's/PKG_CONFIG openssl /PKG_CONFIG openssl11 /g' configure
-        PREPARE_CMD="yum install -y yum-utils make"
-        UPDATE_CMD="yum update -y"
+        yum="yum --setopt=skip_missing_names_on_install=False"
+        PREPARE_CMD="${yum} install -y yum-utils make"
+        UPDATE_CMD="${yum} update -y"
         INSTALL_CMD="yum-builddep -y python3"
-        INSTALL_EXTRAS_CMD="yum install -y lcov gdb ccache"
+        INSTALL_EXTRAS_CMD="${yum} install -y epel-release && \
+            ${yum} install -y lcov gdb ccache"
         CLEANUP_CMD="yum clean all"
         ;;
     Linux-zypper)
@@ -240,20 +244,31 @@ case "$PKG_MGR" in
         ;;
 esac
 
+#function
+eval_cmd() {
+    if test "$OPT_DEBUG" = yes; then
+        echo "$@"
+        echo ""
+    fi
+    eval "$@"
+}
+
 if test -n "$PREPARE_CMD"; then
-    eval "$PREPARE_CMD"
+    eval_cmd "$PREPARE_CMD"
 fi
+
+# exit
 
 if test "$OPT_UPDATE" = "yes" -a -n "$UPDATE_CMD"; then
-    eval "$UPDATE_CMD"
+    eval_cmd "$UPDATE_CMD"
 fi
 
-eval "$INSTALL_CMD"
+eval_cmd "$INSTALL_CMD"
 
 if test "$OPT_EXTRAS" = "yes" -a -n "$INSTALL_EXTRAS_CMD"; then
-    eval "$INSTALL_EXTRAS_CMD"
+    eval_cmd "$INSTALL_EXTRAS_CMD"
 fi
 
 if test "$OPT_CLEANUP" = "yes" -a -n "$CLEANUP_CMD"; then
-    eval "$CLEANUP_CMD"
+    eval_cmd "$CLEANUP_CMD"
 fi
