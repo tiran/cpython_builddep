@@ -182,7 +182,7 @@ case "$PKG_MGR" in
         PREPARE_CMD="${apt} update"
         UPDATE_CMD="${apt} upgrade"
         INSTALL_CMD="${apt} install \
-            build-essential git pkg-config \
+            build-essential git pkg-config procps \
             libbz2-dev libffi-dev libgdbm-dev libgdbm-compat-dev liblzma-dev \
             libncurses5-dev libreadline6-dev libsqlite3-dev libssl-dev \
             lzma lzma-dev tk-dev uuid-dev zlib1g-dev"
@@ -210,7 +210,7 @@ case "$PKG_MGR" in
         UPDATE_CMD="dnf update -y ${dnf_args}"
         # "dnf build-dep python3" installs large deps like valgrind and systemd
         INSTALL_CMD="dnf install -y ${dnf_args} \
-            gcc make pkgconfig git-core tzdata \
+            gcc make pkgconfig git-core tzdata procps-ng \
             bluez-libs-devel bzip2-devel expat-devel gdbm-devel libffi-devel \
             libnsl2-devel libuuid-devel ncurses-devel openssl-devel \
             readline-devel sqlite-devel tcl-devel tk-devel xz-devel \
@@ -223,7 +223,7 @@ case "$PKG_MGR" in
         # yum install -y epel && yum install -y openssl11-devel
         # sed -i 's/PKG_CONFIG openssl /PKG_CONFIG openssl11 /g' configure
         yum="yum --setopt=skip_missing_names_on_install=False"
-        PREPARE_CMD="${yum} install -y yum-utils make"
+        PREPARE_CMD="${yum} install -y yum-utils make procps-ng"
         UPDATE_CMD="${yum} update -y"
         INSTALL_CMD="yum-builddep -y python3"
         INSTALL_EXTRAS_CMD="${yum} install -y epel-release && \

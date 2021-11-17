@@ -1,7 +1,7 @@
 #!/bin/sh
 
-# fail on error, show comands
-set -ex
+# fail on error
+set -e
 
 # trap and kill on CTRL+C
 trap 'pkill -P $$; exit 255;' TERM INT
