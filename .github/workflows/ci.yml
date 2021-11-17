@@ -36,68 +36,72 @@ jobs:
         run: shellcheck -x builddep.sh tests/entry.sh
 
   distros:
-    name: "${{ matrix.distro }} on ${{ matrix.platform }}"
+    name: "${{ matrix.distro }}"
     runs-on: "ubuntu-latest"
     needs: syntaxcheck
     strategy:
       fail-fast: true
       matrix:
-        distro: [
-          "alpine-3.12", "alpine-3.13",
-          "archlinux",
-          "centos-7", "centos-8",
-          "debian-bullseye", "debian-buster", "debian-testing",
-          "fedora-33", "fedora-34", "fedora-35",
-          # "gentoo--stage3",
-          # OpenSUSE container works locally but hangs on GHA.
-          # "opensuse--tumbleweed",
-          # 18.04, 20.04, 21.04, 21.10
-          "ubuntu-bionic", "ubuntu-focal", "ubuntu-hirsute", "ubuntu-impish",
-        ]
-        platform: [
-          "linux/amd64", "linux/arm64", "linux/s390x"
-        ]
-        exclude:
-          # ArchLinux does not offer arm64 and s390x containers
-          - distro: "archlinux"
-            platform: "linux/arm64"
-          - distro: "archlinux"
-            platform: "linux/s390x"
-          # CentOS does not offer s390x containers
-          - distro: "centos-7"
-            platform: "linux/s390x"
-          - distro: "centos-8"
-            platform: "linux/s390x"
-          # Fedora package installation on arm64 is slow
-          - distro: "fedora-33"
-            platform: "linux/arm64"
-          - distro: "fedora-34"
-            platform: "linux/arm64"
-          - distro: "fedora-35"
-            platform: "linux/arm64"
         include:
           # speedup: only build emulated archs for some distros
           # Alpine (test arm64)
+          - distro: "alpine-3.12"
+            platforms: "linux/amd64,linux/arm64,linux/s390x"
+            buildon: "linux/amd64"
           - distro: "alpine-3.13"
-            platform: "linux/arm64"
-            runbuild: true
-          # Fedora (test ppc64le, s390x)
+            platforms: "linux/amd64,linux/arm64,linux/s390x"
+            #buildon: "linux/amd64,linux/arm64"
+            buildon: "linux/amd64"
+
+          # ArchLinux does not offer arm64 and s390x containers
+          - distro: "archlinux"
+            platforms: "linux/amd64"
+            buildon: "linux/amd64"
+
+          # CentOS does not offer s390x containers
+          - distro: "centos-7"
+            platforms: "linux/amd64,linux/arm64"
+            buildon: "linux/amd64"
+          - distro: "centos-8"
+            platforms: "linux/amd64,linux/arm64,linux/ppc64le"
+            buildon: "linux/amd64"
+
+          - distro: "debian-buster"
+            platforms: "linux/amd64,linux/arm64,linux/s390x,linux/386"
+            #buildon: "linux/amd64,linux/386"
+            buildon: "linux/amd64"
+          - distro: "debian-bullseye"
+            platforms: "linux/amd64,linux/arm64,linux/s390x,linux/mips64le"
+            #buildon: "linux/amd64,linux/mips64le"
+            buildon: "linux/amd64"
+          - distro: "debian-testing"
+            platforms: "linux/amd64,linux/arm64,linux/s390x"
+            buildon: "linux/amd64"
+
+          # Fedora package installation on arm64 is slow
+          - distro: "fedora-33"
+            platforms: "linux/amd64,linux/s390x"
+            buildon: "linux/amd64"
+          - distro: "fedora-34"
+            platforms: "linux/amd64,linux/s390x"
+            #buildon: "linux/amd64,linux/s390x"
+            buildon: "linux/amd64"
           - distro: "fedora-35"
-            platform: "linux/ppc64le"
-            runbuild: true
-          - distro: "fedora-35"
-            platform: "linux/s390x"
-            runbuild: true
-          # Debian (test 386, mips64le)
-          - distro: "debian-bullseye"
-            platform: "linux/386"
-            runbuild: true
-          - distro: "debian-bullseye"
-            platform: "linux/ppc64le"
-            runbuild: false
-          - distro: "debian-bullseye"
-            platform: "linux/mips64le"
-            runbuild: true
+            platforms: "linux/amd64,linux/s390x,linux/ppc64le"
+            #buildon: "linux/amd64,linux/ppc64le"
+            buildon: "linux/amd64"
+          - distro: "ubuntu-bionic"
+            platforms: "linux/amd64,linux/arm64,linux/s390x"
+            buildon: "linux/amd64"
+          - distro: "ubuntu-focal"
+            platforms: "linux/amd64,linux/arm64,linux/s390x"
+            buildon: "linux/amd64"
+          - distro: "ubuntu-hirsute"
+            platforms: "linux/amd64,linux/arm64,linux/s390x"
+            buildon: "linux/amd64"
+          - distro: "ubuntu-impish"
+            platforms: "linux/amd64,linux/arm64,linux/s390x"
+            buildon: "linux/amd64"
     steps:
       - name: Set environment
         run: |
@@ -108,6 +112,7 @@ jobs:
           echo "MATRIX_DISTRO=${{ matrix.distro }}" >> $GITHUB_ENV
           echo "IMAGE_CREATED=$(date --rfc-3339=seconds --utc)" >> $GITHUB_ENV
           echo "IMAGE_DISTRO=$(echo $MATRIX_DISTRO | sed s,--,/,g | sed s,-,:,g)" >> $GITHUB_ENV
+          echo "CACHE_PREFIX=$(echo ${{ matrix.distro }}-${{ matrix.buildon }} | tr ',' '-')"  >> $GITHUB_ENV
       - name: "checkout"
         uses: "actions/checkout@v2"
       - name: Install ccache
@@ -116,17 +121,16 @@ jobs:
         uses: docker/setup-buildx-action@v1
       - name: Set up Docker QEMU
         uses: docker/setup-qemu-action@master
-        if: ${{ matrix.platform }} != 'linux/amd64'
         with:
-          platforms: ${{ matrix.platform }}
+          platforms: ${{ matrix.platforms }}
       - name: "build container image"
         uses: docker/build-push-action@v2
         with:
           context: .
           file: tests/Dockerfile.${{ matrix.distro }}
-          platforms: ${{ matrix.platform }}
+          platforms: ${{ matrix.platforms }}
           push: false
-          load: true
+          load: false
           tags: ${{ env.IMAGE_TAG }}
           labels: |
             org.opencontainers.image.created=${{ env.IMAGE_CREATED }}
@@ -144,15 +148,21 @@ jobs:
         with:
           path: |
             ${{ env.CCACHE_DIR }}
-          key: ${{ matrix.distro }}-${{ matrix.platform }}-${{ env.CPYTHON_SHA }}
+          key: ${{ env.CACHE_PREFIX }}-${{ env.CPYTHON_SHA }}
           restore-keys: |
-            ${{ matrix.distro }}-${{ matrix.platform }}-
+            ${{ env.CACHE_PREFIX }}-
+            ${{ matrix.distro }}-
       - name: ccache stats before build
         run: ccache -s
-      # qemu builds are suuuuuper slow, only test some combinations of arch and distro
-      - name: "build CPython with ${{ env.IMAGE_TAG }} on ${{ matrix.platform }}"
-        if: matrix.platform == 'linux/amd64' || matrix.runbuild == 'true'
-        run: docker run --platform ${{ matrix.platform }} --rm -v ${{ env.CPYTHON_DIR }}:/cpython ${{ env.IMAGE_TAG }}
+      - name: "build CPython with ${{ env.IMAGE_TAG }} on ${{ matrix.buildon }}"
+        run: |
+          set -ex
+          # qemu builds are suuuuuper slow
+          # docker exporter does not currently support exporting manifest lists
+          for platform in $(echo "${{ matrix.buildon }}" | tr ',' '\n'); do
+              docker buildx build --load --platform $platform --tag ${{ env.IMAGE_TAG }} --file tests/Dockerfile.${{ matrix.distro }} .
+              docker run --platform $platform --rm -v ${{ env.CPYTHON_DIR }}:/cpython ${{ env.IMAGE_TAG }}
+          done
       - name: ccache stats after build
         run: ccache -s
       - name: Login to quay.io Container Registry
@@ -168,7 +178,7 @@ jobs:
         with:
           context: .
           file: tests/Dockerfile.${{ matrix.distro }}
-          platforms: ${{ matrix.platform }}
+          platforms: ${{ matrix.platforms }}
           push: true
           tags: ${{ env.IMAGE_TAG }}
 
