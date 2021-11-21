@@ -90,11 +90,11 @@ cd cpython
 ```
 
 ```
-podman run -ti --rm -v .:/cpython:Z quay.io/tiran/cpythonbuild:fedora-35
+podman run -ti --rm -v $(pwd):/cpython:Z quay.io/tiran/cpythonbuild:fedora-35
 ```
 
 ```
-docker run -ti --rm -v .:/cpython quay.io/tiran/cpythonbuild:fedora-35
+docker run -ti --rm -v $(pwd):/cpython quay.io/tiran/cpythonbuild:fedora-35
 ```
 
 ### Emulated archs
