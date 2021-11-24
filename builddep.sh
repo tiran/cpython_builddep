@@ -20,7 +20,8 @@ usage() {
     echo ""
     echo "    -h --help     display this help and exit"
     echo "    --update      update all packages"
-    echo "    --extras      install extra development packages (gdb, ccache...)"
+    echo "    --extras      install extra development packages"
+    echo "                  (ccache, lcov, Python for bootstrapping, ...)"
     echo "    --cleanup     cleanup package cache"
     echo ""
 }
@@ -152,6 +153,7 @@ case "$PKG_MGR" in
     FreeBSD-pkg)
         INSTALL_CMD="pkg install -y \
             editline libffi lzma bzip2 gdbm openssl pkgconf sqlite3 tcl86 tk86"
+        INSTALL_EXTRAS_CMD="pkg install -y python3"
         ;;
     Linux-apk)
         # Alpine
@@ -162,7 +164,7 @@ case "$PKG_MGR" in
             bzip2-dev gdbm-dev expat-dev libffi-dev libnsl-dev libtirpc-dev \
             ncurses-dev openssl-dev readline-dev sqlite-dev tcl-dev tk-dev \
             xz-dev zlib-dev"
-        INSTALL_EXTRAS_CMD="apk add ccache gdb"
+        INSTALL_EXTRAS_CMD="apk add ccache gdb python3"
         ;;
     Linux-pacman)
         # Arch Linux
@@ -171,6 +173,7 @@ case "$PKG_MGR" in
         INSTALL_CMD="pacman --noconfirm -S \
             gcc make pkg-config bzip2 gdbm expat libffi ncurses openssl \
             readline sqlite3 tk"
+        INSTALL_EXTRAS_CMD="pacman --noconfirm -S python"
         CLEANUP_CMD="pacman -Scc --noconfirm"
         ;;
     Linux-apt)
@@ -186,7 +189,7 @@ case "$PKG_MGR" in
             libbz2-dev libffi-dev libgdbm-dev libgdbm-compat-dev liblzma-dev \
             libncurses5-dev libreadline6-dev libsqlite3-dev libssl-dev \
             lzma lzma-dev tk-dev uuid-dev zlib1g-dev"
-        INSTALL_EXTRAS_CMD="${apt} install gdb lcov ccache"
+        INSTALL_EXTRAS_CMD="${apt} install gdb lcov ccache python3"
         CLEANUP_CMD="apt clean"
         ;;
     Linux-dnf)
@@ -195,15 +198,16 @@ case "$PKG_MGR" in
         case "$ID" in
             centos)
                 dnf_args="--enablerepo=powertools"
-                INSTALL_EXTRAS_CMD="dnf install -y epel-release && dnf install -y ccache gdb"
+                INSTALL_EXTRAS_CMD="dnf install -y epel-release && \
+                    dnf install -y ccache gdb python3"
                 ;;
             rhel)
                 dnf_args="--enablerepo=rhel-CRB"
-                INSTALL_EXTRAS_CMD="dnf install -y gdb"
+                INSTALL_EXTRAS_CMD="dnf install -y gdb python3"
                 ;;
             *)
                 dnf_args=""
-                INSTALL_EXTRAS_CMD="dnf install -y gdb ccache lcov"
+                INSTALL_EXTRAS_CMD="dnf install -y gdb ccache lcov python3"
                 ;;
         esac
         # PREPARE_CMD="dnf install -y dnf-plugins-core"
@@ -227,7 +231,7 @@ case "$PKG_MGR" in
         UPDATE_CMD="${yum} update -y"
         INSTALL_CMD="yum-builddep -y python3"
         INSTALL_EXTRAS_CMD="${yum} install -y epel-release && \
-            ${yum} install -y lcov gdb ccache"
+            ${yum} install -y lcov gdb ccache python3"
         CLEANUP_CMD="yum clean all"
         ;;
     Linux-zypper)
@@ -236,6 +240,7 @@ case "$PKG_MGR" in
             libbz2-devel libffi-devel libnsl-devel libuuid-devel sqlite3-devel \
             gdbm-devel openssl-devel ncurses-devel readline-devel tk-devel \
             xz-devel zlib-devel"
+        INSTALL_EXTRAS_CMD="zypper install -y python3"
         CLEANUP_CMD="zypper clean --all"
         ;;
     *)
