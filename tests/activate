@@ -1,7 +1,7 @@
+#!/bin/sh
 # source file
 
 PYBUILDDEP_SRCDIR=/cpython
-export PYBUILDDEP_DISTROTAG
 
 # Include ccache
 for ccache_dir in /usr/lib/ccache/bin /usr/lib/ccache /usr/lib64/ccache; do
@@ -11,7 +11,7 @@ for ccache_dir in /usr/lib/ccache/bin /usr/lib/ccache /usr/lib64/ccache; do
     fi
 done
 export PATH
-echo "PATH=${PATH}"
+# echo "PATH=${PATH}"
 
 # export ccache dir
 CCACHE_DIR="${PYBUILDDEP_SRCDIR}/builddep/.ccache"
@@ -21,4 +21,4 @@ export CCACHE_DIR
 # use all CPU cores
 MAKEFLAGS="-j$(nproc)"
 export MAKEFLAGS
-echo "MAKEFLAGS=${MAKEFLAGS}"
+# echo "MAKEFLAGS=${MAKEFLAGS}"

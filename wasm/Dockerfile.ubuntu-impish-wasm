@@ -1,0 +1,36 @@
+FROM quay.io/tiran/cpythonbuild:ubuntu-impish
+
+LABEL org.opencontainers.image.url="https://github.com/tiran/cpython_builddep/"
+LABEL org.opencontainers.image.title="CPython build dependencies for cross compiling on ubuntu:impish"
+LABEL org.opencontainers.image.usage="podman run --rm -ti -v .:/python-wasm/cpython:Z quay.io/tiran/cpythonbuild:ubuntu-impish-wasm"
+
+# vim, less for development
+RUN apt update && \
+    env DEBIAN_FRONTEND=noninteractive apt --no-install-recommends -qy install \
+        emscripten curl ca-certificates vim less && \
+        emconfigure && \
+        apt clean
+
+# RUN curl -L https://github.com/WebAssembly/wasi-sdk/releases/download/wasi-sdk-14/wasi-sdk_14.0_amd64.deb -o /wasi-sdk.deb && \
+#     dpkg -i /wasi-sdk.deb && \
+#     rm /wasi-sdk.deb
+
+# don't do this at home!
+# RUN curl https://wasmtime.dev/install.sh -sSf | bash
+
+# pre-seed emcc build cache
+COPY conftest-seed.c /tmp/conftest.c
+RUN embuilder build libc crt1 zlib bzip2 libsockets libstandalonewasm libhtml5 libdlmalloc
+RUN emcc -pthread -s USE_ZLIB=1 -s USE_BZIP2=1 -o /tmp/conftest /tmp/conftest.c \
+	&& rm /tmp/conftest
+
+# fix SELinux issue in shutil
+COPY shutil-selinux.patch /tmp
+RUN patch /usr/lib/python3.9/shutil.py /tmp/shutil-selinux.patch
+
+RUN git clone https://github.com/ethanhs/python-wasm.git
+
+VOLUME ["/python-wasm/cpython"]
+WORKDIR /python-wasm
+CMD ["/bin/bash"]
+

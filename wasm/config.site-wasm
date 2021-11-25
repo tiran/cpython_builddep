@@ -1,0 +1,59 @@
+#
+# config.site overrides for wasm builds
+#
+# CONFIG_SITE=Misc/config.site-wasm emconfigure ../../configure  -C
+#
+
+ac_cv_buggy_getaddrinfo=no
+ac_cv_file__dev_ptmx=yes
+ac_cv_file__dev_ptc=no
+
+# undefined symbols / unsupported
+ac_cv_func_posix_spawn=no
+ac_cv_func_posix_spawnp=no
+ac_cv_func_eventfd=no
+ac_cv_func_memfd_create=no
+ac_cv_func_prlimit=no
+
+# grp module
+ac_cv_func_getgrgid_r=no
+ac_cv_func_getgrgid=no
+
+ac_cv_func_shutdown=no
+
+# based on pyodide
+# https://github.com/pyodide/pyodide/blob/main/cpython/pyconfig.undefs.h
+
+ac_cv_func_epoll=no
+ac_cv_func_epoll_create1=no
+ac_cv_header_linux_vm_sockets_h=no
+ac_cv_func_socketpair=no
+ac_cv_func_utimensat=no
+ac_cv_func_sigaction=no
+
+# Untested syscalls in emscripten
+ac_cv_func_openat=no
+ac_cv_func_mkdirat=no
+ac_cv_func_fchownat=no
+ac_cv_func_renameat=no
+ac_cv_func_linkat=no
+ac_cv_func_symlinkat=no
+ac_cv_func_readlinkat=no
+ac_cv_func_fchmodat=no
+ac_cv_func_dup3=no
+
+# Syscalls not implemented in emscripten
+ac_cv_func_preadv2=no
+ac_cv_func_preadv=no
+ac_cv_func_pwritev2=no
+ac_cv_func_pwritev=no
+ac_cv_func_pipe2=no
+ac_cv_func_nice=no
+
+# Syscalls that resulted in a segfault
+ac_cv_func_utimensat=no
+ac_cv_header_sys_socket_h=no
+ac_cv_header_sys_ioctl_h=no
+
+# Unsupported functionality
+ac_cv_header_pthread_h=no
