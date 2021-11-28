@@ -1,0 +1,15 @@
+FROM quay.io/tiran/cpythonbuild:ubuntu-impish
+
+LABEL org.opencontainers.image.url="https://github.com/tiran/cpython_builddep/"
+LABEL org.opencontainers.image.title="CPython build dependencies for cross compiling on ubuntu:impish"
+LABEL org.opencontainers.image.usage="podman run --rm -ti -v .:/cpython:Z quay.io/tiran/cpythonbuild:ubuntu-impish-aarch64"
+
+RUN apt update && \
+    env DEBIAN_FRONTEND=noninteractive apt --no-install-recommends -qy install \
+        binutils-aarch64-linux-gnu gcc-aarch64-linux-gnu libc6-dev-arm64-cross && \
+        apt clean
+COPY config.site-aarch64 /usr/local/etc/config.site
+
+COPY cross.sh /cross.sh
+CMD ["/cross.sh"]
+

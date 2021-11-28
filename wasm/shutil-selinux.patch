@@ -1,0 +1,10 @@
+--- /usr/lib/python3.9/shutil.py        2021-11-25 08:45:34.908415943 +0000
++++ /usr/lib/python3.9/shutil.py        2021-11-25 08:45:57.978725633 +0000
+@@ -332,6 +332,7 @@
+                 raise
+             return
+         for name in names:
++            if name.startswith("security"): continue
+             try:
+                 value = os.getxattr(src, name, follow_symlinks=follow_symlinks)
+                 os.setxattr(dst, name, value, follow_symlinks=follow_symlinks)
