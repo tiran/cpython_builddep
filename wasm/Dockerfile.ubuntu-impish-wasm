@@ -7,8 +7,7 @@ LABEL org.opencontainers.image.usage="podman run --rm -ti -v .:/python-wasm/cpyt
 # vim, less for development
 RUN apt update && \
     env DEBIAN_FRONTEND=noninteractive apt --no-install-recommends -qy install \
-        emscripten curl ca-certificates vim less && \
-        emconfigure && \
+        emscripten curl ca-certificates zip htmlmin vim less && \
         apt clean
 
 # RUN curl -L https://github.com/WebAssembly/wasi-sdk/releases/download/wasi-sdk-14/wasi-sdk_14.0_amd64.deb -o /wasi-sdk.deb && \
@@ -18,15 +17,25 @@ RUN apt update && \
 # don't do this at home!
 # RUN curl https://wasmtime.dev/install.sh -sSf | bash
 
-# pre-seed emcc build cache
-COPY conftest-seed.c /tmp/conftest.c
-RUN embuilder build libc crt1 zlib bzip2 libsockets libstandalonewasm libhtml5 libdlmalloc
-RUN emcc -pthread -s USE_ZLIB=1 -s USE_BZIP2=1 -o /tmp/conftest /tmp/conftest.c \
-	&& rm /tmp/conftest
+# run emconfigure once to generate config file
+RUN emconfigure
+
+# pre-seed emcc sysroot with libs used during ./configure
+RUN embuilder build \
+    libal libc++-mt-noexcept libc++-noexcept libc++abi-mt-noexcept \
+    libc++abi-noexcept libc++abi libc-mt libc libc_rt_wasm libcompiler_rt-mt \
+    libcompiler_rt libdlmalloc-mt libdlmalloc libgl-mt libgl libhtml5 \
+    libsockets-mt libsockets libstandalonewasm
+
+# extra ports
+RUN embuilder build zlib
 
 # fix SELinux issue in shutil
 COPY shutil-selinux.patch /tmp
 RUN patch /usr/lib/python3.9/shutil.py /tmp/shutil-selinux.patch
+# fix htmlmin bug
+COPY emcc-htmlmin.patch /tmp
+RUN patch /usr/share/emscripten/emcc.py /tmp/emcc-htmlmin.patch
 
 RUN git clone https://github.com/ethanhs/python-wasm.git
 

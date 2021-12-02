@@ -1,0 +1,12 @@
+--- usr/share/emscripten/emcc.py.orig   2021-12-02 09:49:52.983837545 +0000
++++ usr/share/emscripten/emcc.py        2021-12-02 09:50:26.214269184 +0000
+@@ -3050,7 +3050,7 @@
+   logger.debug('minifying HTML file ' + filename)
+   size_before = os.path.getsize(filename)
+   start_time = time.time()
+-  shared.check_call(['htmlmin', opts, '--', filename, filename])
++  shared.check_call(['htmlmin', '--', filename, filename])
+ 
+   elapsed_time = time.time() - start_time
+   size_after = os.path.getsize(filename)
+
