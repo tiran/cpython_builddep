@@ -219,6 +219,8 @@ jobs:
         include:
           - dockerfile: wasm/Dockerfile.ubuntu-impish-wasm
             image_tag: quay.io/tiran/cpythonbuild:ubuntu-impish-wasm
+          - dockerfile: wasm/Dockerfile.emsdk3
+            image_tag: quay.io/tiran/cpythonbuild:emsdk3
     steps:
       - name: Set environment
         run: |
