@@ -15,6 +15,7 @@ LABEL org.opencontainers.image.usage="podman run --rm -ti -v .:/cpython:Z quay.i
 
 ENV PYBUILDDEP_FROMDISTRO="{fromdistro}"
 ENV PYBUILDDEP_DISTROTAG="{distrotag}"
+ENV PYBUILDDEP_SRCDIR=/cpython
 VOLUME ["/cpython"]
 
 COPY tests/entry.sh tests/cmd.sh /

@@ -32,6 +32,7 @@ RUN curl -L https://github.com/WebAssembly/wasi-sdk/releases/download/wasi-sdk-$
 RUN curl https://wasmtime.dev/install.sh -sSf | bash
 
 RUN cd / && git clone https://github.com/ethanhs/python-wasm.git
+ENV PYBUILDDEP_SRCDIR=/python-wasm/cpython
 VOLUME ["/python-wasm/cpython"]
 WORKDIR /python-wasm
 

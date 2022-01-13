@@ -5,8 +5,6 @@
 # - set compiler cache directory
 # - set make flags to run parallel jobs
 
-PYBUILDDEP_SRCDIR=/cpython
-
 # Include ccache
 for ccache_dir in /usr/lib/ccache/bin /usr/lib/ccache /usr/lib64/ccache; do
     if test -e ${ccache_dir}/gcc; then
