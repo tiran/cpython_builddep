@@ -6,10 +6,6 @@ set -e
 # trap and kill on CTRL+C
 trap 'pkill -P $$; exit 255;' TERM INT
 
-# for PYBUILDDEP_SRCDIR, PATH, CCACHE_DIR, MAKEFLAGS
-# shellcheck source=./tests/activate
-. ./activate
-
 SENTINEL="${PYBUILDDEP_SRCDIR}/pyconfig.h.in"
 if ! test -e "${SENTINEL}"; then
     echo "${SENTINEL} missing" >&2
