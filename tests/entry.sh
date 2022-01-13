@@ -1,41 +1,28 @@
 #!/bin/sh
 
-# fail on error
-set -e
+# entrypoint
+# - add compiler cache to PATH
+# - set compiler cache directory
+# - set make flags to run parallel jobs
 
-# trap and kill on CTRL+C
-trap 'pkill -P $$; exit 255;' TERM INT
+PYBUILDDEP_SRCDIR=/cpython
 
-# for PYBUILDDEP_SRCDIR, PATH, CCACHE_DIR, MAKEFLAGS
-# shellcheck source=./tests/activate
-. ./activate
+# Include ccache
+for ccache_dir in /usr/lib/ccache/bin /usr/lib/ccache /usr/lib64/ccache; do
+    if test -e ${ccache_dir}/gcc; then
+        PATH="${ccache_dir}:${PATH}"
+        break
+    fi
+done
+export PATH
 
-SENTINEL="${PYBUILDDEP_SRCDIR}/pyconfig.h.in"
-if ! test -e "${SENTINEL}"; then
-    echo "${SENTINEL} missing" >&2
-    exit 1
-fi
+# export ccache dir
+CCACHE_DIR="${PYBUILDDEP_SRCDIR}/builddep/.ccache"
+mkdir -p "${CCACHE_DIR}"
+export CCACHE_DIR
 
-if test -z "$PYBUILDDEP_DISTROTAG"; then
-    echo "PYBUILDDEP_DISTROTAG not set" >&2
-    exit 2
-fi
+# use all CPU cores
+MAKEFLAGS="-j$(nproc)"
+export MAKEFLAGS
 
-case "$PYBUILDDEP_DISTROTAG" in
-    centos-7|rhel-7)
-        # no strict build, OpenSSL 1.1.1 missing
-        ;;
-    *)
-        # fail on missing stdlib extension module
-        export PYTHONSTRICTEXTENSIONBUILD=1
-        ;;
-esac
-
-# use out-of-tree builds
-BUILDDIR="${PYBUILDDEP_SRCDIR}/builddep/${PYBUILDDEP_DISTROTAG}-$(uname -m)"
-
-mkdir -p "${BUILDDIR}"
-cd "${BUILDDIR}"
-
-"${PYBUILDDEP_SRCDIR}/configure" -C
-make
+exec "$@"

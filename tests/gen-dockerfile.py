@@ -17,8 +17,9 @@ ENV PYBUILDDEP_FROMDISTRO="{fromdistro}"
 ENV PYBUILDDEP_DISTROTAG="{distrotag}"
 VOLUME ["/cpython"]
 
-COPY tests/entry.sh tests/activate /
-CMD ["/entry.sh"]
+COPY tests/entry.sh tests/cmd.sh /
+ENTRYPOINT ["/entry.sh"]
+CMD ["/cmd.sh"]
 
 COPY builddep.sh /
 RUN ["/builddep.sh", "--update", "--extras", "--cleanup"]
