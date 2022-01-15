@@ -45,10 +45,11 @@ jobs:
         include:
           # speedup: only build emulated archs for some distros
           # Alpine (test arm64)
-          - distro: "alpine-3.12"
-            platforms: "linux/amd64,linux/arm64,linux/s390x"
-            buildon: "linux/amd64"
           - distro: "alpine-3.13"
+            platforms: "linux/amd64,linux/arm64,linux/s390x"
+            #buildon: "linux/amd64,linux/arm64"
+            buildon: "linux/amd64"
+          - distro: "alpine-3.15"
             platforms: "linux/amd64,linux/arm64,linux/s390x"
             #buildon: "linux/amd64,linux/arm64"
             buildon: "linux/amd64"
