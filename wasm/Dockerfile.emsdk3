@@ -14,6 +14,8 @@ RUN ["/builddep.sh", "--update", "--extras", "--cleanup"]
 
 # install extra emscripten ports
 RUN embuilder build zlib bzip2
+# ws / websocket is required for socket support
+RUN npm install -g ws websocket
 
 # fix SELinux issue in shutil
 COPY wasm/shutil-selinux.patch /tmp
@@ -21,8 +23,7 @@ RUN patch /usr/lib/python3.8/shutil.py /tmp/shutil-selinux.patch && \
     rm /tmp/*.patch
 
 # extra dependencies
-# websocket for node runner
-RUN apt install -qy node-ws less vim && apt clean
+RUN apt install -qy less vim && apt clean
 # WASI SDK
 ENV WASI_VERSION=14
 ENV WASI_SDK_PATH=/opt/wasi-sdk
