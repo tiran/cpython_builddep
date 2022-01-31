@@ -37,6 +37,8 @@ includes = ci["jobs"]["distros"]["strategy"]["matrix"]["include"]
 for include in includes:
     distrotag = include["distro"]
     fromdistro = distrotag.replace("--", "/").replace("-", ":")
+    if "centos:stream" in fromdistro:
+        fromdistro = f"quay.io/centos/{fromdistro}"
     with open(os.path.join(here, f"Dockerfile.{distrotag}"), "w") as f:
         f.write(TEMPLATE.format(fromdistro=fromdistro, distrotag=distrotag))
     print(f"* quay.io/tiran/cpythonbuild:{distrotag} ({include['platforms'].replace(',', ', ')})")

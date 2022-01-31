@@ -1,14 +1,14 @@
-FROM centos:8
+FROM quay.io/centos/centos:stream9
 
-LABEL org.opencontainers.image.base.name="centos:8"
+LABEL org.opencontainers.image.base.name="quay.io/centos/centos:stream9"
 LABEL org.opencontainers.image.authors="Christian Heimes"
 LABEL org.opencontainers.image.url="https://github.com/tiran/cpython_builddep/"
-LABEL org.opencontainers.image.title="CPython build dependencies for centos:8"
+LABEL org.opencontainers.image.title="CPython build dependencies for quay.io/centos/centos:stream9"
 LABEL org.opencontainers.image.description="Container with CPython build dependencies"
-LABEL org.opencontainers.image.usage="podman run --rm -ti -v .:/cpython:Z quay.io/tiran/cpythonbuild:centos-8"
+LABEL org.opencontainers.image.usage="podman run --rm -ti -v .:/cpython:Z quay.io/tiran/cpythonbuild:centos-stream9"
 
-ENV PYBUILDDEP_FROMDISTRO="centos:8"
-ENV PYBUILDDEP_DISTROTAG="centos-8"
+ENV PYBUILDDEP_FROMDISTRO="quay.io/centos/centos:stream9"
+ENV PYBUILDDEP_DISTROTAG="centos-stream9"
 ENV PYBUILDDEP_SRCDIR=/cpython
 VOLUME ["/cpython"]
 

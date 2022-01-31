@@ -195,13 +195,21 @@ case "$PKG_MGR" in
     Linux-dnf)
         # CentOS and RHEL need extra development packages from powertools
         # or Code Ready Builder repos.
-        case "$ID" in
-            centos)
+        case "$ID-$VERSION_ID" in
+            centos-9)
+                dnf_args="--enablerepo=crb"
+                INSTALL_EXTRAS_CMD="dnf install -y gdb python3"
+                ;;
+            centos-8)
                 dnf_args="--enablerepo=powertools"
                 INSTALL_EXTRAS_CMD="dnf install -y epel-release && \
                     dnf install -y ccache gdb python3"
                 ;;
-            rhel)
+            rhel-9)
+                dnf_args="--enablerepo=rhel-CRB"
+                INSTALL_EXTRAS_CMD="dnf install -y gdb python3"
+                ;;
+            rhel-8)
                 dnf_args="--enablerepo=rhel-CRB"
                 INSTALL_EXTRAS_CMD="dnf install -y gdb python3"
                 ;;
