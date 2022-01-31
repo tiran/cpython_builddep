@@ -63,8 +63,11 @@ jobs:
           - distro: "centos-7"
             platforms: "linux/amd64,linux/arm64"
             buildon: "linux/amd64"
-          - distro: "centos-8"
+          - distro: "centos-stream8"
             platforms: "linux/amd64,linux/arm64,linux/ppc64le"
+            buildon: "linux/amd64"
+          - distro: "centos-stream9"
+            platforms: "linux/amd64"
             buildon: "linux/amd64"
 
           - distro: "debian-buster"
