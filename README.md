@@ -63,11 +63,12 @@ sed -i 's/PKG_CONFIG openssl /PKG_CONFIG openssl11 /g' configure
 
 Containers are hosted at https://quay.io/repository/tiran/cpythonbuild
 
-* quay.io/tiran/cpythonbuild:alpine-3.12 (linux/amd64, linux/arm64, linux/s390x)
 * quay.io/tiran/cpythonbuild:alpine-3.13 (linux/amd64, linux/arm64, linux/s390x)
+* quay.io/tiran/cpythonbuild:alpine-3.15 (linux/amd64, linux/arm64, linux/s390x)
 * quay.io/tiran/cpythonbuild:archlinux (linux/amd64)
 * quay.io/tiran/cpythonbuild:centos-7 (linux/amd64, linux/arm64)
-* quay.io/tiran/cpythonbuild:centos-8 (linux/amd64, linux/arm64, linux/ppc64le)
+* quay.io/tiran/cpythonbuild:centos-stream8 (linux/amd64, linux/arm64, linux/ppc64le)
+* quay.io/tiran/cpythonbuild:centos-stream9 (linux/amd64)
 * quay.io/tiran/cpythonbuild:debian-buster (linux/amd64, linux/arm64, linux/s390x, linux/386)
 * quay.io/tiran/cpythonbuild:debian-bullseye (linux/amd64, linux/arm64, linux/s390x, linux/mips64le)
 * quay.io/tiran/cpythonbuild:debian-testing (linux/amd64, linux/arm64, linux/s390x)
@@ -103,4 +104,26 @@ Needs ``qemu-user-static`` package and ``binfmt`` support. Emulation is rather s
 
 ```
 podman run --platform linux/s390x -ti --rm -v .:/cpython:Z quay.io/tiran/cpythonbuild:fedora-35
+```
+
+## WebAssembly build
+
+The WebAssembly container image is based on latest Emscripten SDK 3 (emsdk),
+which is based on Ubuntu 20.04 LTS. It comes with all CPython build
+dependencies, [Emscripten](https://emscripten.org/) SDK,
+[WASI SDK](https://github.com/WebAssembly/wasi-sdk),
+[wasmtime](https://wasmtime.dev/) runtime,
+[WASIX](https://github.com/singlestore-labs/wasix), and
+[python-wasm](https://github.com/ethanhs/python-wasm) build scripts. ``zlib`
+and ``bzip2`` emports are pre-built and ``ws`` npm package is installed.
+
+```
+podman run -ti --rm -v $(pwd):/python-wasm/cpython:Z quay.io/tiran/cpythonbuild:emsdk3
+```
+
+```
+./build-python-build.sh
+./build-python-emscripten-node.sh
+./build-python-emscripten-browser.sh
+./build-python-wasi.sh
 ```
