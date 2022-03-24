@@ -5,7 +5,7 @@ LABEL org.opencontainers.image.authors="Christian Heimes"
 LABEL org.opencontainers.image.url="https://github.com/tiran/cpython_builddep/"
 LABEL org.opencontainers.image.title="CPython Emscripten & WASI dependencies"
 LABEL org.opencontainers.image.description=""
-LABEL org.opencontainers.image.usage="podman run --rm -ti -v .:/cpython:Z quay.io/tiran/cpythonbuild:emsdk3"
+LABEL org.opencontainers.image.usage="podman run --rm -ti -v .:/python-wasm/cpython:Z quay.io/tiran/cpythonbuild:emsdk3"
 
 # install CPython build deps
 COPY tests/entry.sh builddep.sh /
@@ -15,7 +15,7 @@ RUN ["/builddep.sh", "--update", "--extras", "--cleanup"]
 # install extra emscripten ports
 RUN embuilder build zlib bzip2
 # ws / websocket is required for socket support
-RUN npm install -g ws websocket
+RUN npm install --prefix /emsdk/upstream/emscripten ws websocket
 
 # fix SELinux issue in shutil
 COPY wasm/shutil-selinux.patch /tmp
@@ -24,15 +24,34 @@ RUN patch /usr/lib/python3.8/shutil.py /tmp/shutil-selinux.patch && \
 
 # extra dependencies
 RUN apt install -qy less vim && apt clean
+
 # WASI SDK
 ENV WASI_VERSION=14
 ENV WASI_SDK_PATH=/opt/wasi-sdk
 RUN curl -L https://github.com/WebAssembly/wasi-sdk/releases/download/wasi-sdk-${WASI_VERSION}/wasi-sdk-${WASI_VERSION}.0-linux.tar.gz | tar -xz -C /opt \
     && mv /opt/wasi-sdk-${WASI_VERSION}.0 ${WASI_SDK_PATH}
+
 # wasmtime
 RUN curl https://wasmtime.dev/install.sh -sSf | bash
 
-RUN cd / && git clone https://github.com/ethanhs/python-wasm.git
+# wasix POSIX stubs
+RUN \
+    git clone --depth=1 https://github.com/singlestore-labs/wasix.git /root/wasix && \
+    make -C /root/wasix && \
+    mkdir -p /opt/wasix/include /opt/wasix/lib && \
+    cp -R /root/wasix/include/* /opt/wasix/include/ && \
+    cp /root/wasix/libwasix.a /opt/wasix/lib/ && \
+    rm -rf /root/wasix
+
+# pkg-config sysroot wrapper for WASI
+COPY wasm/wasm32-unknown-wasi-pkg-config /opt/wasi-sdk/bin/
+
+# python-wasm
+RUN git clone --depth=1 https://github.com/ethanhs/python-wasm.git /python-wasm
+
+# copy WASI build script
+COPY wasm/build-python-wasi.sh /python-wasm/
+
 ENV PYBUILDDEP_SRCDIR=/python-wasm/cpython
 VOLUME ["/python-wasm/cpython"]
 WORKDIR /python-wasm

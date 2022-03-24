@@ -1,0 +1,11 @@
+#!/bin/sh
+
+# Based on https://autotools.info/pkgconfig/cross-compiling.html
+
+SYSROOT=/opt/wasi-sdk/share/wasi-sysroot
+
+export PKG_CONFIG_PATH=
+export PKG_CONFIG_LIBDIR=${SYSROOT}/lib/pkgconfig:${SYSROOT}/share/pkgconfig
+export PKG_CONFIG_SYSROOT_DIR=${SYSROOT}
+
+exec pkg-config "$@"
