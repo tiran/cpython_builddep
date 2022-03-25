@@ -1,4 +1,4 @@
-FROM docker.io/emscripten/emsdk:3.1.7
+FROM docker.io/emscripten/emsdk:3.1.8
 
 LABEL org.opencontainers.image.base.name="emscripten/emsdk"
 LABEL org.opencontainers.image.authors="Christian Heimes"
@@ -15,7 +15,8 @@ RUN ["/builddep.sh", "--update", "--extras", "--cleanup"]
 # install extra emscripten ports
 RUN embuilder build zlib bzip2
 # ws / websocket is required for socket support
-RUN npm install --prefix /emsdk/upstream/emscripten ws websocket
+RUN npm install --prefix /root ws websocket
+RUN ln -rs /root/node_modules /root/.node_modules
 
 # fix SELinux issue in shutil
 COPY wasm/shutil-selinux.patch /tmp
