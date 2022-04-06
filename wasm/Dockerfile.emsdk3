@@ -12,8 +12,9 @@ COPY tests/entry.sh builddep.sh /
 ENTRYPOINT ["/entry.sh"]
 RUN ["/builddep.sh", "--update", "--extras", "--cleanup"]
 
-# install extra emscripten ports
+# install extra emscripten ports, rebuild for shared
 RUN embuilder build zlib bzip2
+RUN embuilder build --pic zlib bzip2 libc-mt libdlmalloc-mt libsockets-mt libstubs libcompiler_rt libcompiler_rt-mt crtbegin libhtml5 libc++-mt-noexcept libc++abi-mt-noexcept libal libGL-mt libstubs-debug libc-mt-debug
 # ws / websocket is required for socket support
 RUN npm install --prefix /root ws websocket
 RUN ln -rs /root/node_modules /root/.node_modules
@@ -24,7 +25,8 @@ RUN patch /usr/lib/python3.8/shutil.py /tmp/shutil-selinux.patch && \
     rm /tmp/*.patch
 
 # extra dependencies
-RUN apt install -qy less vim && apt clean
+# autoconf + libtool is required to build libffi
+RUN apt install -qy less vim apt autoconf automake libtool && apt clean
 
 # WASI SDK
 ENV WASI_VERSION=14
@@ -36,13 +38,9 @@ RUN curl -L https://github.com/WebAssembly/wasi-sdk/releases/download/wasi-sdk-$
 RUN curl https://wasmtime.dev/install.sh -sSf | bash
 
 # wasix POSIX stubs
-RUN \
-    git clone --depth=1 https://github.com/singlestore-labs/wasix.git /root/wasix && \
-    make -C /root/wasix && \
-    mkdir -p /opt/wasix/include /opt/wasix/lib && \
-    cp -R /root/wasix/include/* /opt/wasix/include/ && \
-    cp /root/wasix/libwasix.a /opt/wasix/lib/ && \
-    rm -rf /root/wasix
+COPY wasm/install*.sh /root
+RUN /root/install-wasix.sh
+RUN /root/install-libffi.sh
 
 # pkg-config sysroot wrapper for WASI
 COPY wasm/wasm32-unknown-wasi-pkg-config /opt/wasi-sdk/bin/
@@ -54,6 +52,7 @@ RUN git clone --depth=1 https://github.com/ethanhs/python-wasm.git /python-wasm
 COPY wasm/build-python-wasi.sh /python-wasm/
 
 ENV PYBUILDDEP_SRCDIR=/python-wasm/cpython
+ENV CCACHE_DIR=/python-wasm/cpython/builddir/.ccache
 VOLUME ["/python-wasm/cpython"]
 WORKDIR /python-wasm
 
