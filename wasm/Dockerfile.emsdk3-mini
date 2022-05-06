@@ -1,0 +1,39 @@
+FROM docker.io/emscripten/emsdk:3.1.10
+
+# install extra emscripten ports, rebuild for shared
+COPY wasm/install*.sh /root
+RUN /root/install-emports.sh
+
+# python-wasm
+RUN git clone --depth=1 https://github.com/ethanhs/python-wasm.git /python-wasm
+
+ENV PYBUILDDEP_SRCDIR=/python-wasm/cpython
+ENV CCACHE_DIR=/python-wasm/cpython/builddir/.ccache
+
+COPY tests/entry.sh /
+ENTRYPOINT ["/entry.sh"]
+
+VOLUME ["/python-wasm/cpython"]
+WORKDIR /python-wasm
+CMD ["/bin/bash"]
+
+# ---
+LABEL org.opencontainers.image.base.name="emscripten/emsdk"
+LABEL org.opencontainers.image.authors="Christian Heimes"
+LABEL org.opencontainers.image.url="https://github.com/tiran/cpython_builddep/"
+LABEL org.opencontainers.image.title="CPython Emscripten"
+LABEL org.opencontainers.image.description=""
+LABEL org.opencontainers.image.usage="podman run --rm -ti -v .:/python-wasm/cpython:Z quay.io/tiran/cpythonbuild:emsdk3-mini"
+
+# install minimal CPython build deps
+RUN env DEBIAN_FRONTEND=noninteractive \
+    apt update && \
+    apt --no-install-recommends -qy \
+        install build-essential git pkg-config ccache \
+        libbz2-dev liblzma-dev lzma-dev zlib1g-dev ccache && \
+    apt clean
+
+# fix SELinux issue in shutil
+COPY wasm/shutil-selinux.patch /tmp
+RUN patch /usr/lib/python3.8/shutil.py /tmp/shutil-selinux.patch && \
+    rm /tmp/*.patch

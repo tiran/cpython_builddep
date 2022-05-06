@@ -83,9 +83,6 @@ jobs:
             buildon: "linux/amd64"
 
           # Fedora package installation on arm64 is slow
-          - distro: "fedora-33"
-            platforms: "linux/amd64,linux/s390x"
-            buildon: "linux/amd64"
           - distro: "fedora-34"
             platforms: "linux/amd64,linux/s390x"
             #buildon: "linux/amd64,linux/s390x"
@@ -99,10 +96,10 @@ jobs:
           - distro: "ubuntu-focal"
             platforms: "linux/amd64,linux/arm64,linux/s390x"
             buildon: "linux/amd64"
-          - distro: "ubuntu-hirsute"
-            platforms: "linux/amd64,linux/arm64,linux/s390x"
-            buildon: "linux/amd64"
           - distro: "ubuntu-impish"
+            platforms: "linux/amd64"
+            buildon: "linux/amd64"
+          - distro: "ubuntu-jammy"
             platforms: "linux/amd64,linux/arm64,linux/s390x"
             buildon: "linux/amd64"
     steps:
@@ -212,9 +209,17 @@ jobs:
   #           make -j4
 
   wasm:
-    name: "WASM emsdk + WASI-SDK container"
+    name: "${{ matrix.dockerfile }}"
     runs-on: "ubuntu-latest"
     needs: syntaxcheck
+    strategy:
+      fail-fast: true
+      matrix:
+        include:
+          - dockerfile: wasm/Dockerfile.emsdk3
+            tags: quay.io/tiran/cpythonbuild:emsdk3
+          - dockerfile: wasm/Dockerfile.emsdk3-mini
+            tags: quay.io/tiran/cpythonbuild:emsdk3-mini
     steps:
       - name: Set environment
         run: |
@@ -228,10 +233,10 @@ jobs:
         uses: docker/build-push-action@v2
         with:
           context: .
-          file: wasm/Dockerfile.emsdk3
+          file: ${{ matrix.dockerfile }}
           push: false
           load: false
-          tags: quay.io/tiran/cpythonbuild:emsdk3
+          tags: ${{ matrix.tags }}
           labels: |
             org.opencontainers.image.created=${{ env.IMAGE_CREATED }}
             org.opencontainers.image.revision=${{ github.sha }}
@@ -247,9 +252,9 @@ jobs:
         uses: docker/build-push-action@v2
         with:
           context: .
-          file: wasm/Dockerfile.emsdk3
+          file: ${{ matrix.dockerfile }}
           push: true
-          tags: quay.io/tiran/cpythonbuild:emsdk3
+          tags: ${{ matrix.tags }}
 
   macos:
     name: "macOS brew"
