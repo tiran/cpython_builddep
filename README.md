@@ -72,13 +72,14 @@ Containers are hosted at https://quay.io/repository/tiran/cpythonbuild
 * quay.io/tiran/cpythonbuild:debian-buster (linux/amd64, linux/arm64, linux/s390x, linux/386)
 * quay.io/tiran/cpythonbuild:debian-bullseye (linux/amd64, linux/arm64, linux/s390x, linux/mips64le)
 * quay.io/tiran/cpythonbuild:debian-testing (linux/amd64, linux/arm64, linux/s390x)
-* quay.io/tiran/cpythonbuild:fedora-33 (linux/amd64, linux/s390x)
 * quay.io/tiran/cpythonbuild:fedora-34 (linux/amd64, linux/s390x)
-* quay.io/tiran/cpythonbuild:fedora-35 (linux/amd64, linux/s390x, linux/ppc64le)
-* quay.io/tiran/cpythonbuild:ubuntu-bionic (linux/amd64, linux/arm64, linux/s390x)
+* quay.io/tiran/cpythonbuild:fedora-35 (linux/amd64, linux/s390x)
+* quay.io/tiran/cpythonbuild:fedora-36 (linux/amd64, linux/ppc64le)
 * quay.io/tiran/cpythonbuild:ubuntu-focal (linux/amd64, linux/arm64, linux/s390x)
-* quay.io/tiran/cpythonbuild:ubuntu-hirsute (linux/amd64, linux/arm64, linux/s390x)
-* quay.io/tiran/cpythonbuild:ubuntu-impish (linux/amd64, linux/arm64, linux/s390x)
+* quay.io/tiran/cpythonbuild:ubuntu-impish (linux/amd64)
+* quay.io/tiran/cpythonbuild:ubuntu-jammy (linux/amd64, linux/arm64, linux/s390x)
+* quay.io/tiran/cpythonbuild:emsdk3 (linux/amd64)
+* quay.io/tiran/cpythonbuild:emsdk3-mini (linux/amd64)
 
 ### Usage
 
@@ -120,6 +121,8 @@ and ``bzip2`` emports are pre-built and ``ws`` npm package is installed.
 ```
 podman run -ti --rm -v $(pwd):/python-wasm/cpython:Z quay.io/tiran/cpythonbuild:emsdk3
 ```
+
+The ``emsdk3-mini`` is smaller and comes without WASI and additional build dependencies.
 
 ```
 ./build-python-build.sh
