@@ -4,7 +4,7 @@ set -e
 BUILDDIR=/tmp/wasix
 DEST="${DEST:-/opt/wasix}"
 
-git clone --depth=1 https://github.com/singlestore-labs/wasix.git ${BUILDDIR}
+git clone -b wasi_sdk_15 --depth=1 https://github.com/tiran/wasix.git ${BUILDDIR}
 
 make -C ${BUILDDIR}
 
