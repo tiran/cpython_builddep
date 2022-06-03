@@ -35,7 +35,7 @@ RUN ["/builddep.sh", "--update", "--extras", "--cleanup"]
 RUN apt install -qy less vim autoconf automake libtool && apt clean
 
 # WASI SDK
-ENV WASI_VERSION=15
+ENV WASI_VERSION=16
 ENV WASI_SDK_PATH=/opt/wasi-sdk
 RUN curl -L https://github.com/WebAssembly/wasi-sdk/releases/download/wasi-sdk-${WASI_VERSION}/wasi-sdk-${WASI_VERSION}.0-linux.tar.gz | tar -xz -C /opt \
     && mv /opt/wasi-sdk-${WASI_VERSION}.0 ${WASI_SDK_PATH}
@@ -49,9 +49,6 @@ RUN /root/install-libffi.sh
 
 # pkg-config sysroot wrapper for WASI
 COPY wasm/wasm32-unknown-wasi-pkg-config /opt/wasi-sdk/bin/
-
-# copy WASI build script
-COPY wasm/build-python-wasi.sh /python-wasm/
 
 # fix SELinux issue in shutil
 COPY wasm/shutil-selinux.patch /tmp

@@ -160,7 +160,7 @@ jobs:
           # docker exporter does not currently support exporting manifest lists
           for platform in $(echo "${{ matrix.buildon }}" | tr ',' '\n'); do
               docker buildx build --load --platform $platform --tag ${{ env.IMAGE_TAG }} --file tests/Dockerfile.${{ matrix.distro }} .
-              docker run --platform $platform --rm -v ${{ env.CPYTHON_DIR }}:/cpython ${{ env.IMAGE_TAG }}
+              docker run --pull=never --platform $platform --rm -v ${{ env.CPYTHON_DIR }}:/cpython ${{ env.IMAGE_TAG }}
           done
       - name: ccache stats after build
         run: ccache -s
@@ -217,16 +217,24 @@ jobs:
         include:
           - dockerfile: wasm/Dockerfile.emsdk3
             tag: quay.io/tiran/cpythonbuild:emsdk3
+            test: yes
           - dockerfile: wasm/Dockerfile.emsdk3-mini
             tag: quay.io/tiran/cpythonbuild:emsdk3-mini
     steps:
       - name: Set environment
         run: |
           set -e
+          echo "EMSDK_VERSION=3.1.12" >> $GITHUB_ENV
           echo "IMAGE_CREATED=$(date --rfc-3339=seconds --utc)" >> $GITHUB_ENV
-          echo "EMSDK_VERSION=3.1.10" >> $GITHUB_ENV
+          echo "CPYTHON_DIR=$GITHUB_WORKSPACE/cpython" >> $GITHUB_ENV
       - name: "checkout"
         uses: "actions/checkout@v2"
+      - name: "checkout CPython"
+        uses: "actions/checkout@v2"
+        with:
+          repository: python/cpython
+          path: ${{ env.CPYTHON_DIR }}
+          ref: main
       - name: Set up Docker Buildx
         uses: docker/setup-buildx-action@v1
       - name: "build container image"
@@ -235,7 +243,7 @@ jobs:
           context: .
           file: ${{ matrix.dockerfile }}
           push: false
-          load: false
+          load: true
           tags: |
             ${{ matrix.tag }}
             ${{ matrix.tag }}-${{ env.EMSDK_VERSION }}
@@ -244,6 +252,21 @@ jobs:
           labels: |
             org.opencontainers.image.created=${{ env.IMAGE_CREATED }}
             org.opencontainers.image.revision=${{ github.sha }}
+      - name: Build build Python
+        if: matrix.test == 'yes'
+        run: docker run --pull=never --rm -v ${{ env.CPYTHON_DIR }}:/python-wasm/cpython ${{ matrix.tag }} ./build-python-build.sh
+      - name: Build Emscripten Node Python
+        if: matrix.test == 'yes'
+        run: docker run --pull=never --rm -v ${{ env.CPYTHON_DIR }}:/python-wasm/cpython ${{ matrix.tag }} ./build-python-emscripten-node.sh
+      - name: Emscripten Node pythoninfo
+        if: matrix.test == 'yes'
+        run: docker run --pull=never --rm -v ${{ env.CPYTHON_DIR }}:/python-wasm/cpython ${{ matrix.tag }} ./run-python-node.sh -m test.pythoninfo
+      - name: Build WASI Python
+        if: matrix.test == 'yes'
+        run: docker run --pull=never --rm -v ${{ env.CPYTHON_DIR }}:/python-wasm/cpython ${{ matrix.tag }} ./build-python-wasi.sh
+      - name: WASI pythoninfo
+        if: matrix.test == 'yes'
+        run: docker run --pull=never --rm -v ${{ env.CPYTHON_DIR }}:/python-wasm/cpython ${{ matrix.tag }} ./run-python-wasi.sh -m test.pythoninfo
       - name: Login to quay.io Container Registry
         if: github.event_name == 'pull_request' && github.event.action == 'closed' && github.event.pull_request.merged == true
         uses: docker/login-action@v1 
