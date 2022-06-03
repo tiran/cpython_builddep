@@ -41,7 +41,8 @@ RUN curl -L https://github.com/WebAssembly/wasi-sdk/releases/download/wasi-sdk-$
     && mv /opt/wasi-sdk-${WASI_VERSION}.0 ${WASI_SDK_PATH}
 
 # wasmtime
-RUN curl https://wasmtime.dev/install.sh -sSf | bash
+RUN curl https://wasmtime.dev/install.sh -sSf -o /root/install-wasmtime.sh && \
+    bash /root/install-wasmtime.sh --version v0.36.0
 
 # wasix POSIX stubs, ctypes deps
 RUN /root/install-wasix.sh
