@@ -2,13 +2,12 @@
 set -e
 
 # install extra emscripten ports
+embuilder build MINIMAL_PIC
 embuilder build zlib bzip2
 
 # rebuild for shared extensions
-embuilder build --pic zlib bzip2 libc-mt libdlmalloc-mt libsockets-mt \
-    libstubs libcompiler_rt libcompiler_rt-mt crtbegin libhtml5 \
-    libc++-mt-noexcept libc++abi-mt-noexcept \
-    libal libGL-mt libstubs-debug libc-mt-debug
+embuilder build --pic MINIMAL_PIC
+embuilder build --pic zlib bzip2
 
 # ws / websocket is required for socket support
 npm install --prefix /root ws websocket
