@@ -41,15 +41,18 @@ RUN curl -L https://github.com/WebAssembly/wasi-sdk/releases/download/wasi-sdk-$
     && mv /opt/wasi-sdk-${WASI_VERSION}.0 ${WASI_SDK_PATH}
 
 # wasmtime
+ENV WASMTIME_HOME="/opt/wasmtime"
 RUN curl https://wasmtime.dev/install.sh -sSf -o /root/install-wasmtime.sh && \
-    bash /root/install-wasmtime.sh --version v0.36.0
+    chmod +x /root/install-wasmtime.sh && \
+    /root/install-wasmtime.sh --version v0.36.0 && \
+    ln -srf ${WASMTIME_HOME}/bin/wasmtime /usr/local/bin/
 
 # wasix POSIX stubs, ctypes deps
 RUN /root/install-wasix.sh
-RUN /root/install-libffi.sh
+RUN /root/install-libffi-emscripten.sh
 
 # pkg-config sysroot wrapper for WASI
-COPY wasm/wasm32-unknown-wasi-pkg-config /opt/wasi-sdk/bin/
+COPY wasm/wasm32-unknown-wasi-pkg-config /usr/local/bin/
 
 # fix SELinux issue in shutil
 COPY wasm/shutil-selinux.patch /tmp

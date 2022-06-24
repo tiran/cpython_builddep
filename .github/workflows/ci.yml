@@ -224,7 +224,7 @@ jobs:
       - name: Set environment
         run: |
           set -e
-          echo "EMSDK_VERSION=3.1.12" >> $GITHUB_ENV
+          echo "EMSDK_VERSION=3.1.14" >> $GITHUB_ENV
           echo "IMAGE_CREATED=$(date --rfc-3339=seconds --utc)" >> $GITHUB_ENV
           echo "CPYTHON_DIR=$GITHUB_WORKSPACE/cpython" >> $GITHUB_ENV
       - name: "checkout"
@@ -260,13 +260,19 @@ jobs:
         run: docker run --pull=never --rm -v ${{ env.CPYTHON_DIR }}:/python-wasm/cpython ${{ matrix.tag }} ./build-python-emscripten-node.sh
       - name: Emscripten Node pythoninfo
         if: matrix.test == 'yes'
-        run: docker run --pull=never --rm -v ${{ env.CPYTHON_DIR }}:/python-wasm/cpython ${{ matrix.tag }} ./run-python-node.sh -m test.pythoninfo
+        run: docker run --pull=never --rm --cap-drop=dac_override -v ${{ env.CPYTHON_DIR }}:/python-wasm/cpython ${{ matrix.tag }} make -C cpython/builddir/emscripten-node pythoninfo
       - name: Build WASI Python
         if: matrix.test == 'yes'
         run: docker run --pull=never --rm -v ${{ env.CPYTHON_DIR }}:/python-wasm/cpython ${{ matrix.tag }} ./build-python-wasi.sh
       - name: WASI pythoninfo
         if: matrix.test == 'yes'
-        run: docker run --pull=never --rm -v ${{ env.CPYTHON_DIR }}:/python-wasm/cpython ${{ matrix.tag }} ./run-python-wasi.sh -m test.pythoninfo
+        run: docker run --pull=never --rm --cap-drop=dac_override -v ${{ env.CPYTHON_DIR }}:/python-wasm/cpython ${{ matrix.tag }} make -C cpython/builddir/wasi pythoninfo
+      - name: Run Emscripten tests
+        if: matrix.test == 'yes'
+        run: docker run --pull=never --rm --cap-drop=dac_override -v ${{ env.CPYTHON_DIR }}:/python-wasm/cpython ${{ matrix.tag }} make -C cpython/builddir/emscripten-node buildbottest TESTOPTS="-j2"
+      - name: Run WASI tests
+        if: matrix.test == 'yes'
+        run: docker run --pull=never --rm -v ${{ env.CPYTHON_DIR }}:/python-wasm/cpython ${{ matrix.tag }} make -C cpython/builddir/wasi buildbottest TESTOPTS="-j2"
       - name: Login to quay.io Container Registry
         if: github.event_name == 'pull_request' && github.event.action == 'closed' && github.event.pull_request.merged == true
         uses: docker/login-action@v1 
