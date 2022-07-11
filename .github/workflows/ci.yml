@@ -224,7 +224,7 @@ jobs:
       - name: Set environment
         run: |
           set -e
-          echo "EMSDK_VERSION=3.1.14" >> $GITHUB_ENV
+          echo "EMSDK_VERSION=3.1.15" >> $GITHUB_ENV
           echo "IMAGE_CREATED=$(date --rfc-3339=seconds --utc)" >> $GITHUB_ENV
           echo "CPYTHON_DIR=$GITHUB_WORKSPACE/cpython" >> $GITHUB_ENV
       - name: "checkout"
