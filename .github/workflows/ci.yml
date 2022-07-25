@@ -95,9 +95,6 @@ jobs:
           - distro: "ubuntu-focal"
             platforms: "linux/amd64,linux/arm64,linux/s390x"
             buildon: "linux/amd64"
-          - distro: "ubuntu-impish"
-            platforms: "linux/amd64"
-            buildon: "linux/amd64"
           - distro: "ubuntu-jammy"
             platforms: "linux/amd64,linux/arm64,linux/s390x"
             buildon: "linux/amd64"
@@ -218,13 +215,13 @@ jobs:
           - dockerfile: wasm/Dockerfile.emsdk3
             tag: quay.io/tiran/cpythonbuild:emsdk3
             test: yes
-          - dockerfile: wasm/Dockerfile.emsdk3-mini
-            tag: quay.io/tiran/cpythonbuild:emsdk3-mini
+          #- dockerfile: wasm/Dockerfile.emsdk3-mini
+          #  tag: quay.io/tiran/cpythonbuild:emsdk3-mini
     steps:
       - name: Set environment
         run: |
           set -e
-          echo "EMSDK_VERSION=3.1.15" >> $GITHUB_ENV
+          echo "EMSDK_VERSION=3.1.17" >> $GITHUB_ENV
           echo "IMAGE_CREATED=$(date --rfc-3339=seconds --utc)" >> $GITHUB_ENV
           echo "CPYTHON_DIR=$GITHUB_WORKSPACE/cpython" >> $GITHUB_ENV
       - name: "checkout"
