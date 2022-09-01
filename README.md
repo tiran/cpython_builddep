@@ -27,13 +27,13 @@ sudo ./builddep.sh --extras --cleanup
 
 ## Supported distros
 
-* Alpine (3.12, 3.13)
+* Alpine
 * ArchLinux
-* CentOS (7, 8)
-* Debian (10, 11, testing)
-* Fedora (32+)
-* RHEL (7, 8)
-* Ubuntu (18.04, 20.4+)
+* CentOS
+* Debian
+* Fedora
+* RHEL
+* Ubuntu
 
 ### Note
 
@@ -64,28 +64,24 @@ sed -i 's/PKG_CONFIG openssl /PKG_CONFIG openssl11 /g' configure
 Containers are hosted at https://quay.io/repository/tiran/cpythonbuild
 
 * quay.io/tiran/cpythonbuild:alpine-3.13 (linux/amd64, linux/arm64, linux/s390x)
-* quay.io/tiran/cpythonbuild:alpine-3.15 (linux/amd64, linux/arm64, linux/s390x)
+* quay.io/tiran/cpythonbuild:alpine-3.16 (linux/amd64, linux/arm/v7, linux/arm64/v8, linux/s390x, linux/ppc64le)
 * quay.io/tiran/cpythonbuild:archlinux (linux/amd64)
 * quay.io/tiran/cpythonbuild:centos-7 (linux/amd64, linux/arm64)
 * quay.io/tiran/cpythonbuild:centos-stream8 (linux/amd64, linux/arm64, linux/ppc64le)
 * quay.io/tiran/cpythonbuild:centos-stream9 (linux/amd64)
-* quay.io/tiran/cpythonbuild:debian-buster (linux/amd64, linux/arm64, linux/s390x, linux/386)
-* quay.io/tiran/cpythonbuild:debian-bullseye (linux/amd64, linux/arm64, linux/s390x, linux/mips64le)
+* quay.io/tiran/cpythonbuild:debian-bullseye (linux/amd64, linux/arm/v7, linux/arm64/v8, linux/s390x, linux/ppc64le, linux/mips64le)
 * quay.io/tiran/cpythonbuild:debian-testing (linux/amd64, linux/arm64, linux/s390x)
-* quay.io/tiran/cpythonbuild:fedora-34 (linux/amd64, linux/s390x)
 * quay.io/tiran/cpythonbuild:fedora-35 (linux/amd64, linux/s390x)
-* quay.io/tiran/cpythonbuild:fedora-36 (linux/amd64, linux/ppc64le)
+* quay.io/tiran/cpythonbuild:fedora-36 (linux/amd64, linux/ppc64le, linux/arm64)
 * quay.io/tiran/cpythonbuild:ubuntu-focal (linux/amd64, linux/arm64, linux/s390x)
-* quay.io/tiran/cpythonbuild:ubuntu-impish (linux/amd64)
 * quay.io/tiran/cpythonbuild:ubuntu-jammy (linux/amd64, linux/arm64, linux/s390x)
 * quay.io/tiran/cpythonbuild:emsdk3 (linux/amd64)
-* quay.io/tiran/cpythonbuild:emsdk3-mini (linux/amd64)
 
 ### Usage
 
 The default entry point of a build container runs ``configure -C``,
 ``make clean``, and parallel out-of-tree ``make`` in ``builddep/$tag``. The
-default entry script also sets up ``CCACHE_DIR=/cpython/builddep/.ccache``.
+default entry script also sets up ``CCACHE_DIR=/cpython/builddir/.ccache``.
 
 ```
 cd cpython
@@ -113,10 +109,9 @@ The WebAssembly container image is based on latest Emscripten SDK 3 (emsdk),
 which is based on Ubuntu 20.04 LTS. It comes with all CPython build
 dependencies, [Emscripten](https://emscripten.org/) SDK,
 [WASI SDK](https://github.com/WebAssembly/wasi-sdk),
-[wasmtime](https://wasmtime.dev/) runtime,
-[WASIX](https://github.com/singlestore-labs/wasix), and
-[python-wasm](https://github.com/ethanhs/python-wasm) build scripts. ``zlib`
-and ``bzip2`` emports are pre-built and ``ws`` npm package is installed.
+[wasmtime](https://wasmtime.dev/) runtime, and
+[python-wasm](https://github.com/ethanhs/python-wasm) build scripts. `zlib`
+and `bzip2` emports are pre-built.
 
 ```
 podman run -ti --rm -v $(pwd):/python-wasm/cpython:Z quay.io/tiran/cpythonbuild:emsdk3

@@ -11,6 +11,7 @@ ENV PYBUILDDEP_FROMDISTRO="debian:testing"
 ENV PYBUILDDEP_DISTROTAG="debian-testing"
 ENV PYBUILDDEP_SRCDIR=/cpython
 VOLUME ["/cpython"]
+WORKDIR /cpython
 
 COPY tests/entry.sh tests/cmd.sh /
 ENTRYPOINT ["/entry.sh"]

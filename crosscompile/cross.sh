@@ -17,7 +17,7 @@ if ! test -e "${SENTINEL}"; then
 fi
 
 # use out-of-tree builds
-BUILDDIR="${PYBUILDDEP_SRCDIR}/builddep/${PYBUILDDEP_DISTROTAG}-$(uname -m)"
+BUILDDIR="${PYBUILDDEP_SRCDIR}/builddir/${PYBUILDDEP_DISTROTAG}-$(uname -m)"
 
 mkdir -p "${BUILDDIR}"
 cd "${BUILDDIR}"
@@ -26,7 +26,7 @@ make
 
 BUILDHOST=$(${PYBUILDDEP_SRCDIR}/config.guess)
 CROSSTARGET="aarch64-linux-gnu"
-CROSSDIR="${PYBUILDDEP_SRCDIR}/builddep/${PYBUILDDEP_DISTROTAG}-${CROSSTARGET}"
+CROSSDIR="${PYBUILDDEP_SRCDIR}/builddir/${PYBUILDDEP_DISTROTAG}-${CROSSTARGET}"
 CC=aarch64-linux-gnu-gcc
 
 mkdir -p "${CROSSDIR}"

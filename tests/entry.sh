@@ -16,7 +16,7 @@ export PATH
 
 # export ccache dir
 if test -z "$CCACHE_DIR"; then
-    CCACHE_DIR="${PYBUILDDEP_SRCDIR}/builddep/.ccache"
+    CCACHE_DIR="${PYBUILDDEP_SRCDIR}/builddir/.ccache"
 fi
 mkdir -p "${CCACHE_DIR}"
 export CCACHE_DIR

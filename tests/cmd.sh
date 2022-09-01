@@ -28,7 +28,7 @@ case "$PYBUILDDEP_DISTROTAG" in
 esac
 
 # use out-of-tree builds
-BUILDDIR="${PYBUILDDEP_SRCDIR}/builddep/${PYBUILDDEP_DISTROTAG}-$(uname -m)"
+BUILDDIR="${PYBUILDDEP_SRCDIR}/builddir/${PYBUILDDEP_DISTROTAG}-$(uname -m)"
 
 mkdir -p "${BUILDDIR}"
 cd "${BUILDDIR}"
