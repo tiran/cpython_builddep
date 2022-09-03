@@ -17,6 +17,7 @@ ENV PYBUILDDEP_FROMDISTRO="{fromdistro}"
 ENV PYBUILDDEP_DISTROTAG="{distrotag}"
 ENV PYBUILDDEP_SRCDIR=/cpython
 VOLUME ["/cpython"]
+WORKDIR /cpython
 
 COPY tests/entry.sh tests/cmd.sh /
 ENTRYPOINT ["/entry.sh"]

@@ -11,6 +11,7 @@ ENV PYBUILDDEP_FROMDISTRO="quay.io/centos/centos:stream9"
 ENV PYBUILDDEP_DISTROTAG="centos-stream9"
 ENV PYBUILDDEP_SRCDIR=/cpython
 VOLUME ["/cpython"]
+WORKDIR /cpython
 
 COPY tests/entry.sh tests/cmd.sh /
 ENTRYPOINT ["/entry.sh"]

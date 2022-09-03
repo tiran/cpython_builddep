@@ -189,8 +189,8 @@ case "$PKG_MGR" in
             libbz2-dev libffi-dev libgdbm-dev libgdbm-compat-dev liblzma-dev \
             libncurses5-dev libreadline6-dev libsqlite3-dev libssl-dev \
             lzma lzma-dev tk-dev uuid-dev zlib1g-dev"
-        INSTALL_EXTRAS_CMD="${apt} install gdb lcov ccache python3"
-        CLEANUP_CMD="apt clean"
+        INSTALL_EXTRAS_CMD="${apt} install gdb lcov ccache python3 abigail-tools"
+        CLEANUP_CMD="rm -rf /var/lib/apt/lists/* /var/cache/apt/archives/*"
         ;;
     Linux-dnf)
         # CentOS and RHEL need extra development packages from powertools
@@ -215,7 +215,7 @@ case "$PKG_MGR" in
                 ;;
             *)
                 dnf_args=""
-                INSTALL_EXTRAS_CMD="dnf install -y gdb ccache lcov python3"
+                INSTALL_EXTRAS_CMD="dnf install -y gdb ccache lcov python3 libabigail"
                 ;;
         esac
         # PREPARE_CMD="dnf install -y dnf-plugins-core"

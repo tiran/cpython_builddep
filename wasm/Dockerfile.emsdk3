@@ -32,7 +32,10 @@ RUN ["/builddep.sh", "--update", "--extras", "--cleanup"]
 
 # extra dependencies
 # autoconf + libtool is required to build libffi
-RUN apt install -qy less vim autoconf automake libtool && apt clean
+RUN env DEBIAN_FRONTEND=noninteractive \
+    apt update && \
+    apt -qy install less vim autoconf automake libtool && \
+    rm -rf /var/lib/apt/lists/* /var/cache/apt/archives/*
 
 # WASI SDK
 ENV WASI_VERSION=16
@@ -47,8 +50,7 @@ RUN curl https://wasmtime.dev/install.sh -sSf -o /root/install-wasmtime.sh && \
     /root/install-wasmtime.sh --version v0.39.1 && \
     ln -srf ${WASMTIME_HOME}/bin/wasmtime /usr/local/bin/
 
-# wasix POSIX stubs, ctypes deps
-RUN /root/install-wasix.sh
+# ctypes deps
 RUN /root/install-libffi-emscripten.sh
 
 # pkg-config sysroot wrapper for WASI

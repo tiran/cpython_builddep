@@ -32,7 +32,7 @@ RUN env DEBIAN_FRONTEND=noninteractive \
     apt --no-install-recommends -qy \
         install build-essential git pkg-config ccache \
         libbz2-dev liblzma-dev lzma-dev zlib1g-dev ccache && \
-    apt clean
+    rm -rf /var/lib/apt/lists/* /var/cache/apt/archives/*
 
 # fix SELinux issue in shutil
 COPY wasm/shutil-selinux.patch /tmp
