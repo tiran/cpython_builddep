@@ -22,7 +22,7 @@ jobs:
       fail-fast: false
     steps:
       - name: "checkout"
-        uses: "actions/checkout@v2"
+        uses: "actions/checkout@v3"
       - name: "install dash and shellcheck"
         run: |
            set -e
@@ -103,7 +103,7 @@ jobs:
           echo "IMAGE_DISTRO=$(echo $MATRIX_DISTRO | sed s,--,/,g | sed s,-,:,g)" >> $GITHUB_ENV
           echo "CACHE_PREFIX=$(echo ${{ matrix.distro }}-${{ matrix.buildon }} | tr ',' '-')"  >> $GITHUB_ENV
       - name: "checkout"
-        uses: "actions/checkout@v2"
+        uses: "actions/checkout@v3"
       - name: Install ccache
         run: sudo apt install -y ccache
       - name: Set up Docker Buildx
@@ -125,7 +125,7 @@ jobs:
             org.opencontainers.image.created=${{ env.IMAGE_CREATED }}
             org.opencontainers.image.revision=${{ github.sha }}
       - name: "checkout CPython"
-        uses: "actions/checkout@v2"
+        uses: "actions/checkout@v3"
         with:
           repository: python/cpython
           path: ${{ env.CPYTHON_DIR }}
@@ -178,9 +178,9 @@ jobs:
   #     fail-fast: false
   #   steps:
   #     - name: checkout
-  #       uses: "actions/checkout@v2"
+  #       uses: "actions/checkout@v3"
   #     - name: "checkout CPython"
-  #       uses: "actions/checkout@v2"
+  #       uses: "actions/checkout@v3"
   #       with:
   #         repository: python/cpython
   #         path: cpython
@@ -216,13 +216,13 @@ jobs:
       - name: Set environment
         run: |
           set -e
-          echo "EMSDK_VERSION=3.1.19" >> $GITHUB_ENV
+          echo "EMSDK_VERSION=3.1.24" >> $GITHUB_ENV
           echo "IMAGE_CREATED=$(date --rfc-3339=seconds --utc)" >> $GITHUB_ENV
           echo "CPYTHON_DIR=$GITHUB_WORKSPACE/cpython" >> $GITHUB_ENV
       - name: "checkout"
-        uses: "actions/checkout@v2"
+        uses: "actions/checkout@v3"
       - name: "checkout CPython"
-        uses: "actions/checkout@v2"
+        uses: "actions/checkout@v3"
         with:
           repository: python/cpython
           path: ${{ env.CPYTHON_DIR }}
@@ -293,13 +293,13 @@ jobs:
       fail-fast: false
     steps:
       - name: checkout
-        uses: "actions/checkout@v2"
+        uses: "actions/checkout@v3"
       - name: run builddep.sh
         run: |
           set -e
           ./builddep.sh --debug
       - name: "checkout CPython"
-        uses: "actions/checkout@v2"
+        uses: "actions/checkout@v3"
         with:
           repository: python/cpython
           path: cpython
